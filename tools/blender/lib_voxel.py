@@ -129,7 +129,11 @@ def mesh_grid(grid, face_materials, out_collection=None, name_prefix="vox"):
             if not visible:
                 continue
             mat = fmap[face]
-            quad = [(x + cx, y + cy, z + cz) for (cx, cy, cz) in corners]
+            # Author Blender-correct Z-up coords (height on Z). Swapping two
+            # axes mirrors geometry, so reverse winding to keep faces outward.
+            # After export: three.x=x, three.y=height, three.z=-z.
+            quad = [(x + cx, z + cz, y + cy) for (cx, cy, cz) in corners]
+            quad.reverse()
             buckets.setdefault(mat, []).append(quad)
 
     if out_collection is None:
