@@ -3,6 +3,7 @@ import { Canvas } from '@react-three/fiber'
 import { useGLTF } from '@react-three/drei'
 import { ACESFilmicToneMapping } from 'three'
 import Player from './player'
+import SunsetSky from './environment/SunsetSky'
 
 function WorldModel() {
   const gltf = useGLTF('/models/world/world.glb')
@@ -56,7 +57,7 @@ export default function WorldExperience() {
           gl.toneMappingExposure = 1.05
         }}
       >
-        <color attach="background" args={['#f2b26b']} />
+        <SunsetSky />
         <fogExp2 attach="fog" args={['#e8a06a', 0.0035]} />
         <hemisphereLight args={['#ffd9a0', '#4a3b2f', 0.7]} />
         <directionalLight color="#ffb36b" intensity={2.4} position={[70, 45, -40]} />

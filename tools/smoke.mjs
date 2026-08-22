@@ -61,7 +61,11 @@ browserWs.onmessage = (e) => {
   if (msg.id && pending.has(msg.id)) {
     const { resolve, reject } = pending.get(msg.id)
     pending.delete(msg.id)
-    msg.error ? reject(new Error(JSON.stringify(msg.error))) : resolve(msg.result)
+    if (msg.error) {
+      reject(new Error(JSON.stringify(msg.error)))
+    } else {
+      resolve(msg.result)
+    }
   } else if (msg.method) {
     events.push(msg)
   }

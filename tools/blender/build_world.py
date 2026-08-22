@@ -131,13 +131,39 @@ def fill_world(heights):
             for z in range(r[1], r[3] + 1):
                 vx.set_block(grid, x, PATH_Y, z, "path")
 
-    # zone plot surfaces (placeholder colors)
+    # zone plot surfaces (placeholder colors) + landmark structures
     for name, zone in ZONES.items():
         r = zone["rect"]
         for x in range(r[0], r[2] + 1):
             for z in range(r[1], r[3] + 1):
                 vx.set_block(grid, x, ZONE_Y, z, f"zone_{name}")
+        add_sign(grid, r, name)
+        add_beacon(grid, r, name)
     return grid
+
+
+def add_sign(grid, rect, zone):
+    """MC-style sign on the plot edge nearest the path, facing it."""
+    x0, z0, x1, z1 = rect
+    cz = (z0 + z1) // 2
+    base_y = ZONE_Y + 1
+    side = 1 if x0 >= 0 else -1          # +1 = east zone (faces west)
+    px = x0 if side == -1 else x1        # edge column nearest path
+    for dz in (-2, 2):                   # posts
+        for h in range(3):
+            vx.set_block(grid, px, base_y + h, cz + dz, "plank")
+    for dz in range(-2, 3):              # panel between posts
+        for h in range(2, 4):
+            vx.set_block(grid, px, base_y + h, cz + dz, f"zone_{zone}")
+
+
+def add_beacon(grid, rect, zone):
+    """Emissive pillar at the spawn-side corner so zones are visible from afar."""
+    x0, z0, x1, _ = rect
+    bx = x0 if x0 < 0 else x1            # corner nearer path
+    base_y = ZONE_Y + 1
+    for h in range(6):
+        vx.set_block(grid, bx, base_y + h, z0, f"beacon_{zone}")
 
 
 FACE_MATERIALS = {}
@@ -185,6 +211,16 @@ def main():
     materials.update(register_block("zone_skills", "zone_skills", "#7a4fd0", jitter=10, seed=13))
     materials.update(register_block("zone_projects", "zone_projects", "#3a9ad0", jitter=10, seed=14))
     materials.update(register_block("zone_mine", "zone_mine", "#555555", jitter=8, seed=15))
+    materials.update(register_block("plank", "plank", "#a07a45", jitter=10, seed=8))
+    for name in ZONES:
+        materials.update(register_block(
+            f"beacon_{name}", f"beacon_{name}",
+            "#ffd9a0" if name == "about" else {
+                "stats": "#ffe066", "skills": "#b28aff",
+                "projects": "#6cc4f5", "mine": "#ff9d5c",
+            }[name],
+            jitter=4, emissive=0.9, seed=20,
+        ))
 
     objects = vx.mesh_grid(grid, FACE_MATERIALS)
     vx.assign_materials(objects, materials)

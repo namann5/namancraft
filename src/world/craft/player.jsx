@@ -5,10 +5,13 @@ import * as THREE from 'three'
 import { loadColliders, makeHeightField } from './terrain'
 
 const WALK_SPEED = 4.5
+const SPRINT_SPEED = 7.0
 const GRAVITY = 28
 const JUMP_VELOCITY = 9.2
 const MAX_STEP_UP = 1.05
 const EYE_HEIGHT = 1.62
+const BASE_FOV = 75
+const SPRINT_FOV = 82
 
 export default function Player({ onReady, onLockChange }) {
   const controlsRef = useRef(null)
@@ -25,6 +28,9 @@ export default function Player({ onReady, onLockChange }) {
     dir: new THREE.Vector3(),
     right: new THREE.Vector3(),
     move: new THREE.Vector3(),
+    bobPhase: 0,
+    bobAmp: 0,
+    fov: BASE_FOV,
   }).current
 
   useEffect(() => {
@@ -83,6 +89,9 @@ export default function Player({ onReady, onLockChange }) {
 
     const fwd = (p.keys.KeyW ? 1 : 0) - (p.keys.KeyS ? 1 : 0)
     const strafe = (p.keys.KeyD ? 1 : 0) - (p.keys.KeyA ? 1 : 0)
+    const sprinting = Boolean(p.keys.ShiftLeft || p.keys.ShiftRight) && fwd > 0
+    const speed = sprinting ? SPRINT_SPEED : WALK_SPEED
+    const moving = fwd !== 0 || strafe !== 0
 
     camera.getWorldDirection(p.dir)
     p.dir.y = 0
@@ -93,8 +102,8 @@ export default function Player({ onReady, onLockChange }) {
     p.move.set(0, 0, 0).addScaledVector(p.dir, fwd).addScaledVector(p.right, strafe)
     if (p.move.lengthSq() > 0) p.move.normalize()
 
-    tryMoveAxis('x', p.move.x * WALK_SPEED * dt)
-    tryMoveAxis('z', p.move.z * WALK_SPEED * dt)
+    tryMoveAxis('x', p.move.x * speed * dt)
+    tryMoveAxis('z', p.move.z * speed * dt)
 
     if (p.grounded && p.keys.Space) {
       p.vy = JUMP_VELOCITY
@@ -112,7 +121,24 @@ export default function Player({ onReady, onLockChange }) {
       p.grounded = false
     }
 
-    camera.position.set(p.x, p.feetY + EYE_HEIGHT, p.z)
+    // head-bob: phase advances with ground speed, amplitude eases in/out
+    const targetAmp = p.grounded && moving ? (sprinting ? 0.075 : 0.05) : 0
+    p.bobAmp += (targetAmp - p.bobAmp) * Math.min(1, dt * 10)
+    if (p.grounded && moving) p.bobPhase += dt * speed * 1.9
+    const bobY = -Math.abs(Math.sin(p.bobPhase)) * p.bobAmp
+    const bobSide = Math.cos(p.bobPhase) * p.bobAmp * 0.6
+
+    camera.position.set(
+      p.x + p.right.x * bobSide,
+      p.feetY + EYE_HEIGHT + bobY,
+      p.z + p.right.z * bobSide,
+    )
+
+    const targetFov = sprinting ? SPRINT_FOV : BASE_FOV
+    if (Math.abs(camera.fov - targetFov) > 0.05) {
+      camera.fov += (targetFov - camera.fov) * Math.min(1, dt * 8)
+      camera.updateProjectionMatrix()
+    }
   })
 
   return (
