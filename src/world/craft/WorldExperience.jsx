@@ -1,9 +1,11 @@
-import { Suspense, useState } from 'react'
+import { Suspense, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { useGLTF } from '@react-three/drei'
 import { ACESFilmicToneMapping } from 'three'
 import Player from './player'
 import SunsetSky from './environment/SunsetSky'
+import ZonePanel from './ui/ZonePanel'
+import { ZONES } from './zones'
 
 function WorldModel() {
   const gltf = useGLTF('/models/world/world.glb')
@@ -45,6 +47,20 @@ function Overlay({ phase, ready }) {
 export default function WorldExperience() {
   const [phase, setPhase] = useState('title')
   const [ready, setReady] = useState(false)
+  const [nearby, setNearby] = useState(null)
+  const [panel, setPanel] = useState(null)
+  const panelRef = useRef(null)
+
+  const openPanel = (key) => {
+    panelRef.current = key
+    setPanel(key)
+    document.exitPointerLock()
+  }
+
+  const closePanel = () => {
+    panelRef.current = null
+    setPanel(null)
+  }
 
   return (
     <div className="fixed inset-0 bg-black">
@@ -66,10 +82,41 @@ export default function WorldExperience() {
           <WorldModel />
         </Suspense>
 
-        <Player onReady={() => setReady(true)} onLockChange={(locked) => setPhase(locked ? 'playing' : 'paused')} />
+        <Player
+          onReady={() => setReady(true)}
+          onLockChange={(locked) => {
+            if (locked) {
+              closePanel()
+              setNearby(null)
+              setPhase('playing')
+            } else if (!panelRef.current) {
+              setPhase('paused')
+            }
+          }}
+          onNearby={setNearby}
+          onInteract={openPanel}
+        />
       </Canvas>
 
-      {phase !== 'playing' && <Overlay phase={phase} ready={ready} />}
+      {phase === 'playing' && !panel && (
+        <>
+          <div className="pointer-events-none absolute left-1/2 top-1/2 z-10 h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#f4f1ea]/80" />
+          {nearby && (
+            <div className="pointer-events-none absolute bottom-16 left-1/2 z-10 -translate-x-1/2">
+              <p className="border border-[#f4f1ea]/30 bg-[#0c120e]/70 px-6 py-3 text-sm uppercase tracking-[0.25em] text-[#f4f1ea] backdrop-blur-sm">
+                <span className="font-display font-semibold" style={{ color: ZONES[nearby].accent }}>
+                  E
+                </span>
+                {'  '}· View {ZONES[nearby].title}
+              </p>
+            </div>
+          )}
+        </>
+      )}
+
+      {panel && <ZonePanel zoneKey={panel} onClose={closePanel} />}
+
+      {phase !== 'playing' && !panel && <Overlay phase={phase} ready={ready} />}
     </div>
   )
 }

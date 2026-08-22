@@ -3,6 +3,8 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { PointerLockControls } from '@react-three/drei'
 import * as THREE from 'three'
 import { loadColliders, makeHeightField } from './terrain'
+import { nearestZone } from './zones'
+import { worldControls } from './controls'
 
 const WALK_SPEED = 4.5
 const SPRINT_SPEED = 7.0
@@ -13,7 +15,7 @@ const EYE_HEIGHT = 1.62
 const BASE_FOV = 75
 const SPRINT_FOV = 82
 
-export default function Player({ onReady, onLockChange }) {
+export default function Player({ onReady, onLockChange, onNearby, onInteract }) {
   const controlsRef = useRef(null)
   const { camera } = useThree()
   const fieldPromise = useMemo(() => loadColliders(), [])
@@ -31,7 +33,15 @@ export default function Player({ onReady, onLockChange }) {
     bobPhase: 0,
     bobAmp: 0,
     fov: BASE_FOV,
+    nearby: null,
   }).current
+
+  useEffect(() => {
+    worldControls.current = controlsRef.current
+    return () => {
+      worldControls.current = null
+    }
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -52,6 +62,14 @@ export default function Player({ onReady, onLockChange }) {
   useEffect(() => {
     const down = (e) => {
       p.keys[e.code] = true
+      if (
+        e.code === 'KeyE' &&
+        !e.repeat &&
+        controlsRef.current?.isLocked &&
+        p.nearby
+      ) {
+        onInteract?.(p.nearby)
+      }
     }
     const up = (e) => {
       p.keys[e.code] = false
@@ -67,7 +85,7 @@ export default function Player({ onReady, onLockChange }) {
       window.removeEventListener('keyup', up)
       window.removeEventListener('blur', blur)
     }
-  }, [p])
+  }, [p, onInteract])
 
   const tryMoveAxis = (axis, delta) => {
     if (!delta || !p.field) return false
@@ -133,6 +151,12 @@ export default function Player({ onReady, onLockChange }) {
       p.feetY + EYE_HEIGHT + bobY,
       p.z + p.right.z * bobSide,
     )
+
+    const zone = nearestZone(p.x, p.z)
+    if (zone !== p.nearby) {
+      p.nearby = zone
+      onNearby?.(zone)
+    }
 
     const targetFov = sprinting ? SPRINT_FOV : BASE_FOV
     if (Math.abs(camera.fov - targetFov) > 0.05) {
