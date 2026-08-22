@@ -1,7 +1,7 @@
-import { Suspense, useRef, useState } from 'react'
-import { Canvas } from '@react-three/fiber'
+import { Suspense, useEffect, useRef, useState } from 'react'
+import { Canvas, useFrame } from '@react-three/fiber'
 import { useGLTF } from '@react-three/drei'
-import { ACESFilmicToneMapping } from 'three'
+import { ACESFilmicToneMapping, RepeatWrapping } from 'three'
 import Player from './player'
 import SunsetSky from './environment/SunsetSky'
 import ZonePanel from './ui/ZonePanel'
@@ -9,6 +9,46 @@ import { ZONES } from './zones'
 
 function WorldModel() {
   const gltf = useGLTF('/models/world/world.glb')
+  const waterRef = useRef(null)
+  const beaconsRef = useRef([])
+
+  useEffect(() => {
+    gltf.scene.traverse((obj) => {
+      if (!obj.isMesh) return
+      obj.receiveShadow = true
+      const name = obj.material?.name || ''
+      if (name.includes('water')) {
+        waterRef.current = obj
+        obj.castShadow = false
+        obj.material.transparent = true
+        obj.material.opacity = 0.82
+        obj.material.map.wrapS = RepeatWrapping
+        obj.material.map.wrapT = RepeatWrapping
+        return
+      }
+      obj.castShadow = true
+      if (name.startsWith('mat_beacon_')) {
+        beaconsRef.current.push(obj)
+      }
+    })
+    return () => {
+      waterRef.current = null
+      beaconsRef.current = []
+    }
+  }, [gltf.scene])
+
+  useFrame(({ clock }, dt) => {
+    const t = clock.elapsedTime
+    const water = waterRef.current
+    if (water?.material?.map) {
+      water.material.map.offset.x = Math.sin(t * 0.08) * 0.06
+      water.material.map.offset.y = (water.material.map.offset.y - dt * 0.02) % 1
+    }
+    beaconsRef.current.forEach((mesh, i) => {
+      mesh.material.emissiveIntensity = 0.75 + Math.sin(t * 2 + i * 1.7) * 0.35
+    })
+  })
+
   return <primitive object={gltf.scene} />
 }
 
@@ -65,6 +105,7 @@ export default function WorldExperience() {
   return (
     <div className="fixed inset-0 bg-black">
       <Canvas
+        shadows
         dpr={[1, 1.75]}
         gl={{ antialias: true, powerPreference: 'high-performance' }}
         camera={{ fov: 75, near: 0.1, far: 600, position: [0, 20, 30] }}
@@ -76,7 +117,21 @@ export default function WorldExperience() {
         <SunsetSky />
         <fogExp2 attach="fog" args={['#e8a06a', 0.0035]} />
         <hemisphereLight args={['#ffd9a0', '#4a3b2f', 0.7]} />
-        <directionalLight color="#ffb36b" intensity={2.4} position={[70, 45, -40]} />
+        <directionalLight
+          color="#ffb36b"
+          intensity={2.4}
+          position={[70, 45, -40]}
+          castShadow
+          shadow-mapSize-width={2048}
+          shadow-mapSize-height={2048}
+          shadow-camera-left={-110}
+          shadow-camera-right={110}
+          shadow-camera-top={110}
+          shadow-camera-bottom={-110}
+          shadow-camera-near={10}
+          shadow-camera-far={300}
+          shadow-bias={-0.0004}
+        />
 
         <Suspense fallback={null}>
           <WorldModel />

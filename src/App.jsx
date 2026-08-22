@@ -33,13 +33,14 @@ function App() {
     <BrowserRouter>
       <ScrollReset />
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Suspense fallback={null}><WorldExperience /></Suspense>} />
+        <Route path="/classic" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/projects" element={<Projects />} />
         <Route path="/skills" element={<Skills />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/world" element={<Suspense fallback={null}><WorldExperience /></Suspense>} />
-        <Route path="*" element={<Home />} />
+        <Route path="*" element={<Suspense fallback={null}><WorldExperience /></Suspense>} />
       </Routes>
     </BrowserRouter>
   )
