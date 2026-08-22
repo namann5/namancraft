@@ -30,7 +30,7 @@ function App() {
   }, [])
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
       <ScrollReset />
       <Routes>
         <Route path="/" element={<Suspense fallback={null}><WorldExperience /></Suspense>} />

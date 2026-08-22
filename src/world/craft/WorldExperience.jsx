@@ -8,7 +8,7 @@ import ZonePanel from './ui/ZonePanel'
 import { ZONES } from './zones'
 
 function WorldModel() {
-  const gltf = useGLTF('/models/world/world.glb')
+  const gltf = useGLTF(`${import.meta.env.BASE_URL}models/world/world.glb`)
   const waterRef = useRef(null)
   const beaconsRef = useRef([])
 

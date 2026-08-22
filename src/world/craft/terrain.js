@@ -2,7 +2,7 @@ let collidersPromise = null
 
 export function loadColliders() {
   if (!collidersPromise) {
-    collidersPromise = fetch('/models/world/colliders.json').then((r) => {
+    collidersPromise = fetch(`${import.meta.env.BASE_URL}models/world/colliders.json`).then((r) => {
       if (!r.ok) throw new Error(`colliders.json ${r.status}`)
       return r.json()
     })
