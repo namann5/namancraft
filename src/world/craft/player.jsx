@@ -5,6 +5,7 @@ import * as THREE from 'three'
 import { loadColliders, makeHeightField } from './terrain'
 import { nearestZone } from './zones'
 import { worldControls } from './controls'
+import { touchInput } from './input'
 
 const WALK_SPEED = 4.5
 const SPRINT_SPEED = 7.0
@@ -15,7 +16,7 @@ const EYE_HEIGHT = 1.62
 const BASE_FOV = 75
 const SPRINT_FOV = 82
 
-export default function Player({ onReady, onLockChange, onNearby, onInteract }) {
+export default function Player({ onReady, onLockChange, onNearby, onInteract, touch = false, active = false }) {
   const controlsRef = useRef(null)
   const { camera } = useThree()
   const fieldPromise = useMemo(() => loadColliders(), [])
@@ -34,6 +35,8 @@ export default function Player({ onReady, onLockChange, onNearby, onInteract }) 
     bobAmp: 0,
     fov: BASE_FOV,
     nearby: null,
+    yaw: 0,
+    pitch: 0,
   }).current
 
   useEffect(() => {
@@ -103,13 +106,28 @@ export default function Player({ onReady, onLockChange, onNearby, onInteract }) 
   useFrame((_, dtRaw) => {
     const dt = Math.min(dtRaw, 0.05)
     const f = p.field
-    if (!f || !controlsRef.current?.isLocked) return
+    const running = touch ? active : Boolean(controlsRef.current?.isLocked)
+    if (!f || !running) return
 
-    const fwd = (p.keys.KeyW ? 1 : 0) - (p.keys.KeyS ? 1 : 0)
-    const strafe = (p.keys.KeyD ? 1 : 0) - (p.keys.KeyA ? 1 : 0)
+    if (touch) {
+      p.yaw -= touchInput.lookDx
+      p.pitch = Math.max(-1.45, Math.min(1.45, p.pitch - touchInput.lookDy))
+      touchInput.lookDx = 0
+      touchInput.lookDy = 0
+      camera.quaternion.setFromEuler(new THREE.Euler(p.pitch, p.yaw, 0, 'YXZ'))
+    }
+
+    let fwd = (p.keys.KeyW ? 1 : 0) - (p.keys.KeyS ? 1 : 0)
+    let strafe = (p.keys.KeyD ? 1 : 0) - (p.keys.KeyA ? 1 : 0)
+    if (touch) {
+      fwd += -touchInput.moveY
+      strafe += touchInput.moveX
+    }
+    fwd = Math.max(-1, Math.min(1, fwd))
+    strafe = Math.max(-1, Math.min(1, strafe))
     const sprinting = Boolean(p.keys.ShiftLeft || p.keys.ShiftRight) && fwd > 0
     const speed = sprinting ? SPRINT_SPEED : WALK_SPEED
-    const moving = fwd !== 0 || strafe !== 0
+    const moving = Math.abs(fwd) > 0.05 || Math.abs(strafe) > 0.05
 
     camera.getWorldDirection(p.dir)
     p.dir.y = 0
@@ -123,7 +141,7 @@ export default function Player({ onReady, onLockChange, onNearby, onInteract }) 
     tryMoveAxis('x', p.move.x * speed * dt)
     tryMoveAxis('z', p.move.z * speed * dt)
 
-    if (p.grounded && p.keys.Space) {
+    if ((p.grounded && p.keys.Space) || (p.grounded && touchInput.jump)) {
       p.vy = JUMP_VELOCITY
       p.grounded = false
     }
@@ -164,6 +182,8 @@ export default function Player({ onReady, onLockChange, onNearby, onInteract }) 
       camera.updateProjectionMatrix()
     }
   })
+
+  if (touch) return null
 
   return (
     <PointerLockControls

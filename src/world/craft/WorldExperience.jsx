@@ -1,10 +1,11 @@
-import { Suspense, useEffect, useRef, useState } from 'react'
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { useGLTF } from '@react-three/drei'
 import { ACESFilmicToneMapping, RepeatWrapping } from 'three'
 import Player from './player'
 import SunsetSky from './environment/SunsetSky'
 import ZonePanel from './ui/ZonePanel'
+import TouchControls from './ui/TouchControls'
 import { ZONES } from './zones'
 
 function WorldModel() {
@@ -52,7 +53,7 @@ function WorldModel() {
   return <primitive object={gltf.scene} />
 }
 
-function Overlay({ phase, ready }) {
+function Overlay({ phase, ready, onEnter, touch }) {
   const title = phase === 'title' ? 'NamanCraft' : 'Paused'
   return (
     <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-8 bg-[#0c120e]/85 backdrop-blur-sm max-sm:gap-6">
@@ -64,7 +65,8 @@ function Overlay({ phase, ready }) {
           {title}
         </h1>
         <p className="max-w-[420px] text-sm leading-relaxed text-[#c9d4cb]/80">
-          A walkable Minecraft-style portfolio world. Gray-box build.
+          A walkable Minecraft-style portfolio world.
+          {touch ? ' Best on desktop — touch controls enabled.' : ' Gray-box build.'}
         </p>
       </div>
 
@@ -72,13 +74,14 @@ function Overlay({ phase, ready }) {
         id="enter-world-btn"
         type="button"
         disabled={!ready}
+        onClick={onEnter}
         className="cursor-pointer border-2 border-[#f4f1ea]/80 bg-[#f4f1ea]/10 px-10 py-4 font-display text-xl tracking-[0.08em] text-[#f4f1ea] uppercase transition-colors hover:bg-[#f4f1ea]/25 disabled:cursor-wait disabled:opacity-40"
       >
         {!ready ? 'Loading world…' : phase === 'title' ? 'Enter World' : 'Resume'}
       </button>
 
       <p className="text-[11px] uppercase tracking-[0.3em] text-[#c9d4cb]/60">
-        WASD move · Space jump · Mouse look · Esc pause
+        {touch ? 'Left stick move · drag look · tap E at zones' : 'WASD move · Space jump · Mouse look · Esc pause'}
       </p>
     </div>
   )
@@ -90,16 +93,22 @@ export default function WorldExperience() {
   const [nearby, setNearby] = useState(null)
   const [panel, setPanel] = useState(null)
   const panelRef = useRef(null)
+  const isTouch = useMemo(() => window.matchMedia('(pointer: coarse)').matches, [])
 
   const openPanel = (key) => {
     panelRef.current = key
     setPanel(key)
-    document.exitPointerLock()
+    if (!isTouch) document.exitPointerLock()
   }
 
   const closePanel = () => {
     panelRef.current = null
     setPanel(null)
+  }
+
+  const enterWorld = () => {
+    if (isTouch) setPhase('playing')
+    // desktop: PointerLockControls' #enter-world-btn selector handles locking
   }
 
   return (
@@ -138,6 +147,8 @@ export default function WorldExperience() {
         </Suspense>
 
         <Player
+          touch={isTouch}
+          active={phase === 'playing'}
           onReady={() => setReady(true)}
           onLockChange={(locked) => {
             if (locked) {
@@ -171,7 +182,27 @@ export default function WorldExperience() {
 
       {panel && <ZonePanel zoneKey={panel} onClose={closePanel} />}
 
-      {phase !== 'playing' && !panel && <Overlay phase={phase} ready={ready} />}
+      {phase !== 'playing' && !panel && (
+        <Overlay phase={phase} ready={ready} onEnter={enterWorld} touch={isTouch} />
+      )}
+
+      {isTouch && phase === 'playing' && !panel && (
+        <>
+          <button
+            type="button"
+            onClick={() => setPhase('paused')}
+            className="absolute right-4 top-4 z-20 rounded-full border border-[#f4f1ea]/40 bg-[#0c120e]/60 px-4 py-2 text-xs uppercase tracking-[0.2em] text-[#f4f1ea]/80"
+            aria-label="Pause"
+          >
+            II
+          </button>
+          <TouchControls
+            nearby={nearby}
+            accent={nearby ? ZONES[nearby].accent : '#ffd9a0'}
+            onInteract={() => nearby && openPanel(nearby)}
+          />
+        </>
+      )}
     </div>
   )
 }
