@@ -30,7 +30,9 @@ function Contact() {
             GitHub
           </a>
           <a
-            href="#"
+            href="https://www.linkedin.com/in/naman-singh-dev"
+            target="_blank"
+            rel="noreferrer"
             className="text-sm uppercase tracking-[0.2em] text-[#f4f1ea]/50 transition-opacity hover:opacity-100 hover:text-[#f4f1ea]"
           >
             LinkedIn

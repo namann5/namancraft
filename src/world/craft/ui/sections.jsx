@@ -161,7 +161,7 @@ export function ConnectSection({ onClose }) {
   const rows = [
     { label: 'GitHub', href: LINKS.github, note: 'namann5', icon: 'compass' },
     { label: 'Email', href: LINKS.email, note: 'naman.2002.as@gmail.com', icon: 'book' },
-    { label: 'LinkedIn', href: LINKS.linkedin, note: 'coming soon', icon: 'diamond' },
+    { label: 'LinkedIn', href: LINKS.linkedin, note: 'in/naman-singh-dev', icon: 'diamond' },
     { label: 'Resume', href: LINKS.resume, note: 'PDF coming soon', icon: 'chest' },
   ]
   return (

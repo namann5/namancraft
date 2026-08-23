@@ -13,7 +13,7 @@ export const SPLASHES = [
 export const LINKS = {
   github: 'https://github.com/namann5',
   email: 'mailto:naman.2002.as@gmail.com',
-  linkedin: '#', // TODO: add LinkedIn profile URL
+  linkedin: 'https://www.linkedin.com/in/naman-singh-dev',
   resume: '#', // TODO: link a resume PDF from /public
 }
 
