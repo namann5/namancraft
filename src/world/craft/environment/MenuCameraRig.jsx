@@ -1,17 +1,15 @@
 import { useEffect, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
+import { MENU_CAM_POS } from './landmarks'
 
-const ORBIT_CENTER = new THREE.Vector3(0, 10, -18)
-const ORBIT_SPEED = 0.042
-// slow dolly drift: radius/height breathe instead of a fixed orbit
-const BASE_RADIUS = 26
-const RADIUS_AMP = 4.5
-const BASE_HEIGHT = 14
-const HEIGHT_AMP = 2
+const LOOK_TARGET = new THREE.Vector3(-6, 9.5, -34)
 
-// Cinematic menu camera: slow orbit with a gentle dolly drift, looking down
-// the path. On 'entering' it flies to the player's eye position, then hands off.
+const lookTmp = new THREE.Vector3()
+
+// Fixed cinematic tripod for the main menu with a subtle breathing drift so
+// the frame feels alive without ever breaking the composition. On 'entering'
+// it flies to the player's eye position, then hands off.
 export default function MenuCameraRig({ mode, playerEye, onComplete }) {
   const start = useRef(null)
   const done = useRef(false)
@@ -30,20 +28,14 @@ export default function MenuCameraRig({ mode, playerEye, onComplete }) {
 
     if (mode === 'menu') {
       const wt = clock.elapsedTime
-      const t = wt * ORBIT_SPEED
-      const r = BASE_RADIUS + Math.sin(wt * 0.021) * RADIUS_AMP
-      const h = BASE_HEIGHT + Math.sin(wt * 0.013 + 1.3) * HEIGHT_AMP
+      // breathing: ±0.45 horizontal sway, ±0.3 vertical bob, slow
       camera.position.set(
-        Math.sin(t) * r,
-        h + Math.sin(t * 0.7) * 1.4,
-        ORBIT_CENTER.z + Math.cos(t) * r * 0.72,
+        MENU_CAM_POS[0] + Math.sin(wt * 0.085) * 0.45,
+        MENU_CAM_POS[1] + Math.sin(wt * 0.062 + 1.7) * 0.3,
+        MENU_CAM_POS[2] + Math.cos(wt * 0.051) * 0.25,
       )
-      // look target drifts slowly along the path for a subtle parallax feel
-      camera.lookAt(
-        ORBIT_CENTER.x + Math.sin(wt * 0.017) * 2,
-        ORBIT_CENTER.y - 2,
-        ORBIT_CENTER.z - 14,
-      )
+      lookTmp.copy(LOOK_TARGET)
+      camera.lookAt(lookTmp)
       return
     }
 

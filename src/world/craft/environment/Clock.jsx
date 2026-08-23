@@ -36,21 +36,16 @@ const CELL = 12
 const CANVAS_W = 29 * CELL // 6 digits(3+1 gap) + 2 colons(1+1 gap) - 1
 const CANVAS_H = 9 * CELL
 
-const TAGLINE = 'BUILDING DREAMS ONE COMMIT AT A TIME'
+const TAGLINE_LINES = ['BUILDING DREAMS', 'ONE COMMIT AT A TIME']
 const TAG_CELL = 8
-// letter(3) + gap(1), word space = extra 2 cells
-const TAG_COLS =
-  TAGLINE.split(' ').reduce(
-    (acc, word, i) => acc + (i > 0 ? 3 + word.length * 4 - 1 : word.length * 4 - 1),
-    0,
-  ) || 1
-const TAG_W = TAG_COLS * TAG_CELL
-const TAG_H = 7 * TAG_CELL
+// longest line drives the canvas width; each glyph advances 4 cells
+const TAG_W = Math.max(...TAGLINE_LINES.map((l) => l.length)) * 4 * TAG_CELL
+const TAG_H = TAGLINE_LINES.length * 8 * TAG_CELL
 
 function paintDigits(ctx, timeStr) {
-  ctx.fillStyle = '#120e1a'
+  ctx.fillStyle = '#0d0a16'
   ctx.fillRect(0, 0, CANVAS_W, CANVAS_H)
-  ctx.fillStyle = '#241b30'
+  ctx.fillStyle = '#221a30'
   ctx.fillRect(0, 0, CANVAS_W, CELL / 2)
   ctx.fillRect(0, CANVAS_H - CELL / 2, CANVAS_W, CELL / 2)
 
@@ -63,9 +58,9 @@ function paintDigits(ctx, timeStr) {
         if (glyph[r][cc] === '1') {
           const px = x + cc * CELL
           const py = (2 + r) * CELL
-          ctx.fillStyle = 'rgba(255, 150, 60, 0.28)'
+          ctx.fillStyle = 'rgba(255, 160, 66, 0.34)'
           ctx.fillRect(px - 2, py - 2, CELL + 4, CELL + 4)
-          ctx.fillStyle = 'rgb(255, 158, 56)'
+          ctx.fillStyle = 'rgb(255, 176, 80)'
           ctx.fillRect(px, py, CELL, CELL)
         }
       }
@@ -76,26 +71,29 @@ function paintDigits(ctx, timeStr) {
 
 function paintTagline(ctx) {
   ctx.clearRect(0, 0, TAG_W, TAG_H)
-  let x = 0
-  for (const ch of TAGLINE) {
-    if (ch === ' ') {
-      x += 4 * TAG_CELL
-      continue
-    }
-    const glyph = GLYPHS[ch]
-    if (!glyph) continue
-    for (let r = 0; r < 5; r += 1) {
-      for (let cc = 0; cc < 3; cc += 1) {
-        if (glyph[r][cc] === '1') {
-          ctx.fillStyle = 'rgba(255, 190, 110, 0.22)'
-          ctx.fillRect(x + cc * TAG_CELL - 1, (r + 1) * TAG_CELL - 1, TAG_CELL + 2, TAG_CELL + 2)
-          ctx.fillStyle = 'rgb(235, 178, 96)'
-          ctx.fillRect(x + cc * TAG_CELL, (r + 1) * TAG_CELL, TAG_CELL, TAG_CELL)
+  TAGLINE_LINES.forEach((line, li) => {
+    const indent = ((TAG_W / TAG_CELL) - line.length * 4 + 3) / 2
+    let x = Math.round(indent) * TAG_CELL
+    const rowBase = (li * 8 + 1) * TAG_CELL
+    for (const ch of line) {
+      if (ch !== ' ') {
+        const glyph = GLYPHS[ch]
+        if (glyph) {
+          for (let r = 0; r < 5; r += 1) {
+            for (let cc = 0; cc < 3; cc += 1) {
+              if (glyph[r][cc] === '1') {
+                ctx.fillStyle = 'rgba(255, 190, 110, 0.20)'
+                ctx.fillRect(x + cc * TAG_CELL - 1, rowBase + r * TAG_CELL - 1, TAG_CELL + 2, TAG_CELL + 2)
+                ctx.fillStyle = 'rgb(228, 172, 96)'
+                ctx.fillRect(x + cc * TAG_CELL, rowBase + r * TAG_CELL, TAG_CELL, TAG_CELL)
+              }
+            }
+          }
         }
       }
+      x += 4 * TAG_CELL
     }
-    x += 4 * TAG_CELL
-  }
+  })
 }
 
 function makeTex(canvas) {
@@ -126,7 +124,7 @@ export default function Clock() {
     })
 
     const geo = new THREE.PlaneGeometry(8.2, (CANVAS_H / CANVAS_W) * 8.2)
-    const tagGeo = new THREE.PlaneGeometry(5.2, (TAG_H / TAG_W) * 5.2)
+    const tagGeo = new THREE.PlaneGeometry(3.6, (TAG_H / TAG_W) * 3.6)
     return { canvas, tex: mat.map, mat, tagMat, geo, tagGeo }
   }, [])
 

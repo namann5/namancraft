@@ -6,6 +6,7 @@ import Player from './player'
 import SunsetSky from './environment/SunsetSky'
 import DayNightCycle from './environment/DayNightCycle'
 import MenuCameraRig from './environment/MenuCameraRig'
+import { MENU_CAM_POS } from './environment/landmarks'
 import Clouds from './environment/Clouds'
 import Particles from './environment/Particles'
 import Ambience from './environment/Ambience'
@@ -29,7 +30,7 @@ const SECTION_COMPONENTS = {
   connect: ConnectSection,
 }
 
-const MENU_CAM_START = [0, 16, 4]
+const MENU_CAM_START = MENU_CAM_POS
 
 function WorldModel() {
   const gltf = useGLTF(`${import.meta.env.BASE_URL}models/world/world.glb`)

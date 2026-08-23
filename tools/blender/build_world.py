@@ -159,6 +159,7 @@ def fill_world(heights):
     add_fire_pit(grid)
     add_house(grid, heights)
     add_garden(grid)
+    add_terraces(grid, heights)
     add_pond(grid, heights)
     add_path_branch(grid, heights)
     add_clock_tower(grid, heights)
@@ -326,6 +327,50 @@ def add_house(grid, heights):
         vx.set_block(grid, HX0 - 1, y + 1, dz, "log")
         vx.set_block(grid, HX0 - 1, y + 2, dz, "flame")
         LANTERN_SPOTS.append((HX0 - 1, y + 2.5, dz))
+
+
+def add_terraces(grid, heights):
+    """Turn the house plateau's raw cliff edges into an intentional stone
+    retaining wall: blossom parapet, vines, lanterns, and a stepped stair
+    where the branch path climbs up to the front door."""
+    gy = HOUSE_Y
+
+    def ground(x, z):
+        return ground_top(heights, x, z)
+
+    # north retaining wall (faces the menu camera)
+    for x in range(HOUSE_PAD[0], HOUSE_PAD[1] + 1):
+        g = ground(x, 37)
+        for yy in range(g + 1, gy + 1):
+            vx.set_block(grid, x, yy, 37, "stone")
+        # blossom parapet alternating with gaps
+        if x % 2 == 0:
+            vx.set_block(grid, x, gy + 1, 37,
+                         ("flower_pink", "flower_yellow", "flower_red")[(x // 2) % 3])
+    # west cheek wall
+    for z in range(HOUSE_PAD[2], HOUSE_PAD[3] + 1):
+        g = ground(14, z)
+        for yy in range(g + 1, gy + 1):
+            vx.set_block(grid, 14, yy, z, "stone")
+    # vines trailing down the north face
+    for x in range(18, 42, 5):
+        vx.set_block(grid, x, gy - 1, 36, "vine")
+        if x % 10 == 8:
+            vx.set_block(grid, x, gy - 2, 36, "vine")
+    # lantern posts framing the terrace
+    for lx in (17, 33):
+        vx.set_block(grid, lx, gy + 1, 35, "log")
+        vx.set_block(grid, lx, gy + 2, 35, "flame")
+        LANTERN_SPOTS.append((lx, gy + 2.5, 35))
+
+    # stone stair climbing the west edge where the branch path meets the pad
+    for sx in range(12, 16):
+        step_top = gy - (15 - sx)          # x15 -> 9 (pad), x12 -> 6 (ground)
+        for zz in (48, 49, 50):
+            g = ground(sx, zz)
+            for yy in range(g, step_top + 1):
+                vx.set_block(grid, sx, yy, zz, "path" if yy == step_top else "stone")
+            heights[zz - ORIGIN_Z][sx - ORIGIN_X] = max(step_top, g)
 
 
 def add_pond(grid, heights):
