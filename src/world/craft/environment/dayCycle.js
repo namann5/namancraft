@@ -2,13 +2,13 @@
 // readers (sky shader, clouds, torch flicker). t: 0=midnight 0.25=sunrise
 // 0.5=noon 0.75=sunset. Starts at golden hour to match the classic look.
 
-export const DAY_LENGTH = 420 // seconds per full cycle
+export const DAY_LENGTH = 480 // seconds per full cycle
 
 export const dayState = {
-  t: 0.72,
-  daylight: 0.55, // 0 night .. 1 full day
-  dusk: 1, // 1 at golden hour, 0 otherwise
-  glowBoost: 1.9, // emissive multiplier for beacons/torches
+  t: 0.86, // start at night: stars, moon, glowing windows
+  daylight: 0,
+  dusk: 0,
+  glowBoost: 2.1,
 }
 
 // Registries populated by the owning components on mount.
@@ -50,36 +50,37 @@ export function smoothstep(a, b, x) {
   return t * t * (3 - 2 * t)
 }
 
-// Keyframes over sun elevation e (-1..1)
+// Keyframes over sun elevation e (-1..1). Dusk leans pink/purple rather
+// than flat orange; nights are deep blue-violet.
 export const ZENITH = makeRamp([
-  [-1.0, '#060a18'],
-  [-0.25, '#0b1026'],
+  [-1.0, '#070a18'],
+  [-0.25, '#141034'],
   [0.0, '#2c3a66'],
   [0.35, '#4d7ec9'],
   [1.0, '#3f74c9'],
 ])
 export const HORIZON = makeRamp([
-  [-1.0, '#0e1530'],
-  [-0.25, '#131b38'],
-  [0.0, '#ffb36b'],
+  [-1.0, '#0e1533'],
+  [-0.25, '#221b45'],
+  [0.0, '#e08e9c'],
   [0.35, '#bfd9ef'],
   [1.0, '#cfe6f5'],
 ])
 export const FOG = makeRamp([
-  [-1.0, '#0d1226'],
-  [-0.25, '#151b33'],
-  [0.0, '#e8a06a'],
+  [-1.0, '#0c1024'],
+  [-0.25, '#171233'],
+  [0.0, '#bd7f8e'],
   [0.35, '#c7d8e8'],
   [1.0, '#d4e4f2'],
 ])
 export const SUNLIGHT = makeRamp([
-  [0.0, '#ff9d54'],
-  [0.15, '#ffb36b'],
+  [0.0, '#ff9d78'],
+  [0.15, '#ffb99b'],
   [0.5, '#ffe8c4'],
   [1.0, '#fff6e6'],
 ])
 export const HEMI_SKY = makeRamp([
-  [-0.25, '#24304f'],
+  [-0.25, '#26224e'],
   [0.0, '#8f7ba0'],
   [0.4, '#ffd9a0'],
   [1.0, '#cfe0f0'],

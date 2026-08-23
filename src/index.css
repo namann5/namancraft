@@ -98,6 +98,44 @@ body {
 .mc-btn:hover:not(:disabled),
 .mc-btn:focus-visible:not(:disabled) {
   filter: brightness(1.22);
+  transform: scale(1.025) translateY(-1px);
+}
+/* pixel sparkles that pop on hover */
+.mc-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background-image:
+    radial-gradient(#ffe066 42%, transparent 46%),
+    radial-gradient(#fff3c4 42%, transparent 46%),
+    radial-gradient(#ffe066 42%, transparent 46%);
+  background-size: 6px 6px;
+  background-repeat: no-repeat;
+  background-position:
+    12% -20%,
+    84% -30%,
+    55% -25%;
+  transition: opacity 150ms ease;
+}
+.mc-btn:hover:not(:disabled)::after {
+  opacity: 1;
+  animation: mc-spark 700ms ease-out infinite alternate;
+}
+@keyframes mc-spark {
+  from {
+    background-position:
+      12% 108%,
+      84% 118%,
+      55% 112%;
+  }
+  to {
+    background-position:
+      12% -20%,
+      84% -30%,
+      55% -25%;
+  }
 }
 .mc-btn:focus-visible {
   outline: 3px solid #ffe066;

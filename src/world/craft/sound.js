@@ -76,9 +76,29 @@ export function isMusicOn() {
   return musicPref()
 }
 
-// Resume from a user gesture (e.g. PLAY click) for returning visitors.
-export function primeMusic() {
-  if (musicPref() && !music) startMusic()
+// Resume from a user gesture. force=true (PLAY WORLD) also starts the music
+// for first-time visitors who never toggled it; an explicit '0' always wins.
+export function primeMusic(force = false) {
+  let raw = null
+  try {
+    raw = localStorage.getItem(MUSIC_KEY)
+  } catch {
+    raw = null
+  }
+  if (music) return
+  if (raw === '1' || musicPref()) {
+    startMusic()
+    return
+  }
+  if (force && raw === null) {
+    try {
+      localStorage.setItem(MUSIC_KEY, '1')
+    } catch {
+      /* private mode */
+    }
+    musicOn = true
+    startMusic()
+  }
 }
 
 export function toggleMusic() {

@@ -8,6 +8,8 @@ import DayNightCycle from './environment/DayNightCycle'
 import MenuCameraRig from './environment/MenuCameraRig'
 import Clouds from './environment/Clouds'
 import Particles from './environment/Particles'
+import Ambience from './environment/Ambience'
+import Clock from './environment/Clock'
 import { dayState } from './environment/dayCycle'
 import ZonePanel from './ui/ZonePanel'
 import TouchControls from './ui/TouchControls'
@@ -121,7 +123,7 @@ export default function WorldExperience() {
 
   const handlePlay = useCallback(() => {
     if (!ready || flightRef.current) return
-    primeMusic()
+    primeMusic(true)
     flightRef.current = true
     setWelcomed(false)
     setPhase('entering')
@@ -156,6 +158,8 @@ export default function WorldExperience() {
           <WorldModel />
           <Clouds />
           <Particles />
+          <Clock />
+          <Ambience />
         </Suspense>
 
         <MenuCameraRig
