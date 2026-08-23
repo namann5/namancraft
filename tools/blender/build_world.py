@@ -139,7 +139,37 @@ def fill_world(heights):
                 vx.set_block(grid, x, ZONE_Y, z, f"zone_{name}")
         add_sign(grid, r, name)
         add_beacon(grid, r, name)
+
+    add_torches(grid, heights)
+    add_fire_pit(grid)
     return grid
+
+
+def ground_top(heights, x, z):
+    ix = x - ORIGIN_X
+    iz = z - ORIGIN_Z
+    if 0 <= ix < SIZE_X and 0 <= iz < SIZE_Z:
+        return heights[iz][ix]
+    return BASE_Y
+
+
+def add_torches(grid, heights):
+    """Lantern posts flanking the path every ~10 blocks, alternating sides."""
+    for i, bz in enumerate(range(12, 89, 10)):
+        bx = -3 if i % 2 == 0 else 3
+        top = max(ground_top(heights, bx, bz), PATH_Y)
+        vx.set_block(grid, bx, top + 1, bz, "plank")
+        vx.set_block(grid, bx, top + 2, bz, "plank")
+        vx.set_block(grid, bx, top + 3, bz, "flame")
+
+
+def add_fire_pit(grid):
+    """Stone-ringed campfire just east of the spawn point."""
+    cx, cz, y = 4, 1, PLAZA_Y + 1
+    ring = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+    for dx, dz in ring:
+        vx.set_block(grid, cx + dx, y, cz + dz, "stone")
+    vx.set_block(grid, cx, y, cz, "flame")
 
 
 def add_sign(grid, rect, zone):
@@ -212,6 +242,9 @@ def main():
     materials.update(register_block("zone_projects", "zone_projects", "#3a9ad0", jitter=10, seed=14))
     materials.update(register_block("zone_mine", "zone_mine", "#555555", jitter=8, seed=15))
     materials.update(register_block("plank", "plank", "#a07a45", jitter=10, seed=8))
+    materials.update(register_block("flame", "flame", "#ffb347", jitter=18,
+                                    speckle=0.15, speckle_hex="#ffe066",
+                                    emissive=1.0, seed=9))
     for name in ZONES:
         materials.update(register_block(
             f"beacon_{name}", f"beacon_{name}",

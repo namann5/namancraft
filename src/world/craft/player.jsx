@@ -4,7 +4,7 @@ import { PointerLockControls } from '@react-three/drei'
 import * as THREE from 'three'
 import { loadColliders, makeHeightField } from './terrain'
 import { nearestZone } from './zones'
-import { worldControls } from './controls'
+import { worldControls, playerEye } from './controls'
 import { touchInput } from './input'
 
 const WALK_SPEED = 4.5
@@ -55,6 +55,9 @@ export default function Player({ onReady, onLockChange, onNearby, onInteract, to
       p.z = (p.field.minZ + p.field.maxZ) / 2
       p.feetY = p.field.groundAt(p.x, p.z)
       camera.position.set(p.x, p.feetY + EYE_HEIGHT, p.z)
+      playerEye.x = p.x
+      playerEye.y = p.feetY + EYE_HEIGHT
+      playerEye.z = p.z
       onReady?.()
     })
     return () => {
@@ -106,7 +109,7 @@ export default function Player({ onReady, onLockChange, onNearby, onInteract, to
   useFrame((_, dtRaw) => {
     const dt = Math.min(dtRaw, 0.05)
     const f = p.field
-    const running = touch ? active : Boolean(controlsRef.current?.isLocked)
+    const running = touch ? active : Boolean(active && controlsRef.current?.isLocked)
     if (!f || !running) return
 
     if (touch) {
@@ -169,6 +172,9 @@ export default function Player({ onReady, onLockChange, onNearby, onInteract, to
       p.feetY + EYE_HEIGHT + bobY,
       p.z + p.right.z * bobSide,
     )
+    playerEye.x = camera.position.x
+    playerEye.y = camera.position.y
+    playerEye.z = camera.position.z
 
     const zone = nearestZone(p.x, p.z)
     if (zone !== p.nearby) {
