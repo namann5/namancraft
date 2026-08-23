@@ -38,7 +38,9 @@ function Contact() {
             LinkedIn
           </a>
           <a
-            href="#"
+            href="https://www.instagram.com/naman5_"
+            target="_blank"
+            rel="noreferrer"
             className="text-sm uppercase tracking-[0.2em] text-[#f4f1ea]/50 transition-opacity hover:opacity-100 hover:text-[#f4f1ea]"
           >
             Instagram

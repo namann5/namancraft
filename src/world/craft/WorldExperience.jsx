@@ -4,9 +4,11 @@ import { useGLTF } from '@react-three/drei'
 import { ACESFilmicToneMapping, RepeatWrapping } from 'three'
 import Player from './player'
 import SunsetSky from './environment/SunsetSky'
+import DayNightCycle from './environment/DayNightCycle'
 import MenuCameraRig from './environment/MenuCameraRig'
 import Clouds from './environment/Clouds'
 import Particles from './environment/Particles'
+import { dayState } from './environment/dayCycle'
 import ZonePanel from './ui/ZonePanel'
 import TouchControls from './ui/TouchControls'
 import MainMenu from './ui/MainMenu'
@@ -15,6 +17,7 @@ import WelcomeToast from './ui/WelcomeToast'
 import { ProjectsSection, JourneySection, InventorySection, AchievementsSection, ConnectSection } from './ui/sections'
 import { ZONES } from './zones'
 import { worldControls, playerEye } from './controls'
+import { primeMusic } from './sound'
 
 const SECTION_COMPONENTS = {
   projects: ProjectsSection,
@@ -64,11 +67,13 @@ function WorldModel() {
       water.material.map.offset.y = (water.material.map.offset.y - dt * 0.02) % 1
     }
     glowRef.current.forEach((mesh, i) => {
+      const boost = dayState.glowBoost
       if (mesh.material.name === 'mat_flame') {
-        // torch flicker: fast, noisy
-        mesh.material.emissiveIntensity = 1.1 + Math.sin(t * 11 + i * 2.3) * 0.25 + Math.sin(t * 23 + i) * 0.12
+        // torch flicker: fast, noisy — brighter at night
+        mesh.material.emissiveIntensity =
+          (1.1 + Math.sin(t * 11 + i * 2.3) * 0.25 + Math.sin(t * 23 + i) * 0.12) * boost
       } else {
-        mesh.material.emissiveIntensity = 0.75 + Math.sin(t * 2 + i * 1.7) * 0.35
+        mesh.material.emissiveIntensity = (0.75 + Math.sin(t * 2 + i * 1.7) * 0.35) * boost
       }
     })
   })
@@ -116,6 +121,7 @@ export default function WorldExperience() {
 
   const handlePlay = useCallback(() => {
     if (!ready || flightRef.current) return
+    primeMusic()
     flightRef.current = true
     setWelcomed(false)
     setPhase('entering')
@@ -143,23 +149,8 @@ export default function WorldExperience() {
         }}
       >
         <SunsetSky />
+        <DayNightCycle />
         <fogExp2 attach="fog" args={['#e8a06a', 0.0038]} />
-        <hemisphereLight args={['#ffd9a0', '#4a3b2f', 0.7]} />
-        <directionalLight
-          color="#ffb36b"
-          intensity={2.4}
-          position={[70, 45, -40]}
-          castShadow
-          shadow-mapSize-width={2048}
-          shadow-mapSize-height={2048}
-          shadow-camera-left={-110}
-          shadow-camera-right={110}
-          shadow-camera-top={110}
-          shadow-camera-bottom={-110}
-          shadow-camera-near={10}
-          shadow-camera-far={300}
-          shadow-bias={-0.0004}
-        />
 
         <Suspense fallback={null}>
           <WorldModel />

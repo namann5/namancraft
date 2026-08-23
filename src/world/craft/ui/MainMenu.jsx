@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { sfx } from '../sound'
 import { LINKS, SPLASHES } from '../data/portfolio'
+import MusicToggle from './MusicToggle'
 
 const SECTIONS = [
   { key: 'projects', label: 'Projects' },
@@ -28,6 +29,11 @@ export default function MainMenu({ ready, entering, onPlay, onSection, touch }) 
         }}
         aria-hidden="true"
       />
+
+      {/* ambient music toggle */}
+      <div className="absolute right-4 top-4 z-30">
+        <MusicToggle />
+      </div>
 
       <div className="relative flex w-full max-w-[520px] flex-1 flex-col items-center justify-center px-4 pb-24 pt-[7svh] max-sm:pb-20">
         {/* title block */}

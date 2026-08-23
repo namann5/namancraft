@@ -1,5 +1,6 @@
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
+import { cloudsReg } from './dayCycle'
 
 // Blocky sunset clouds: clusters of flattened boxes drifting east, wrapping.
 function makeCluster(seed) {
@@ -33,6 +34,13 @@ export default function Clouds({ count = 7 }) {
       })),
     [count],
   )
+
+  useEffect(() => {
+    cloudsReg.group = group.current
+    return () => {
+      cloudsReg.group = null
+    }
+  }, [])
 
   useFrame((_, dt) => {
     if (!group.current) return

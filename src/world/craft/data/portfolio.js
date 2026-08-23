@@ -14,6 +14,7 @@ export const LINKS = {
   github: 'https://github.com/namann5',
   email: 'mailto:naman.2002.as@gmail.com',
   linkedin: 'https://www.linkedin.com/in/naman-singh-dev',
+  instagram: 'https://www.instagram.com/naman5_',
   resume: '#', // TODO: link a resume PDF from /public
 }
 

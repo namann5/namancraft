@@ -162,6 +162,7 @@ export function ConnectSection({ onClose }) {
     { label: 'GitHub', href: LINKS.github, note: 'namann5', icon: 'compass' },
     { label: 'Email', href: LINKS.email, note: 'naman.2002.as@gmail.com', icon: 'book' },
     { label: 'LinkedIn', href: LINKS.linkedin, note: 'in/naman-singh-dev', icon: 'diamond' },
+    { label: 'Instagram', href: LINKS.instagram, note: '@naman5_', icon: 'camera' },
     { label: 'Resume', href: LINKS.resume, note: 'PDF coming soon', icon: 'chest' },
   ]
   return (

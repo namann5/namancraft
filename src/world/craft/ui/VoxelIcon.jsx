@@ -119,6 +119,25 @@ const ICONS = {
       <rect x="6" y="6" width="4" height="4" fill="#ffffff" />
     </g>
   ),
+  note: (
+    <g>
+      <rect x="9" y="1" width="2" height="10" fill="#efe6cf" />
+      <polygon points="11,1 15,3 15,5 11,4" fill="#efe6cf" />
+      <rect x="4" y="9" width="6" height="3" fill="#ffd166" />
+      <rect x="3" y="10" width="8" height="2" fill="#ffd166" />
+      <rect x="4" y="12" width="5" height="2" fill="#e0a93f" />
+    </g>
+  ),
+  camera: (
+    <g>
+      <rect x="3" y="3" width="10" height="10" rx="0" fill="#3b3540" />
+      <rect x="3" y="3" width="10" height="2" fill="#544d5c" />
+      <rect x="5" y="1" width="6" height="3" fill="#544d5c" />
+      <rect x="5" y="5" width="6" height="6" fill="#e88ab0" />
+      <rect x="6" y="6" width="2" height="2" fill="#f7c1d8" />
+      <rect x="11" y="4" width="1" height="1" fill="#ffd166" />
+    </g>
+  ),
 }
 
 export default function VoxelIcon({ type, size = 32 }) {
