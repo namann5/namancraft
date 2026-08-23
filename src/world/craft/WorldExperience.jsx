@@ -16,7 +16,7 @@ import TouchControls from './ui/TouchControls'
 import MainMenu from './ui/MainMenu'
 import PauseMenu from './ui/PauseMenu'
 import WelcomeToast from './ui/WelcomeToast'
-import { ProjectsSection, JourneySection, InventorySection, AchievementsSection, ConnectSection } from './ui/sections'
+import { ProjectsSection, JourneySection, InventorySection, AchievementsSection, ConnectSection, HomeSection } from './ui/sections'
 import { ZONES } from './zones'
 import { worldControls, playerEye } from './controls'
 import { primeMusic } from './sound'
@@ -147,7 +147,7 @@ export default function WorldExperience() {
         camera={{ fov: 70, near: 0.1, far: 700, position: MENU_CAM_START }}
         onCreated={({ gl }) => {
           gl.toneMapping = ACESFilmicToneMapping
-          gl.toneMappingExposure = 1.02
+          gl.toneMappingExposure = 1.1
         }}
       >
         <SunsetSky />
@@ -205,7 +205,7 @@ export default function WorldExperience() {
                 <span className="font-pixel text-xs" style={{ color: ZONES[nearby].accent }}>
                   E
                 </span>
-                <span className="ml-3 text-xs">View {ZONES[nearby].title}</span>
+                <span className="ml-3 text-xs">{ZONES[nearby].verb || 'View'} {ZONES[nearby].title}</span>
               </p>
             </div>
           )}
@@ -231,8 +231,15 @@ export default function WorldExperience() {
         </>
       )}
 
-      {/* zone interaction panels */}
-      {zonePanel && <ZonePanel zoneKey={zonePanel} onClose={closeZonePanel} />}
+      {/* zone interaction panels (house + clock get dedicated overlays) */}
+      {zonePanel &&
+        (zonePanel === 'home' ? (
+          <HomeSection onClose={closeZonePanel} />
+        ) : zonePanel === 'journey' ? (
+          <JourneySection onClose={closeZonePanel} />
+        ) : (
+          <ZonePanel zoneKey={zonePanel} onClose={closeZonePanel} />
+        ))}
 
       {/* menu section overlays */}
       {section && !zonePanel && (

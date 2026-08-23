@@ -2,7 +2,7 @@ import { useEffect, useMemo } from 'react'
 import * as THREE from 'three'
 import { LANDMARKS } from './landmarks'
 
-// Blocky 3x5 pixel digits — drawn by hand, no font files.
+// Blocky 3x5 pixel glyphs — drawn by hand, no font files.
 const GLYPHS = {
   0: ['111', '101', '101', '101', '111'],
   1: ['010', '110', '010', '010', '111'],
@@ -15,16 +15,41 @@ const GLYPHS = {
   8: ['111', '101', '111', '101', '111'],
   9: ['111', '101', '111', '001', '111'],
   ':': ['0', '1', '0', '1', '0'],
+  A: ['111', '101', '111', '101', '101'],
+  B: ['110', '101', '110', '101', '110'],
+  C: ['111', '100', '100', '100', '111'],
+  D: ['110', '101', '101', '101', '110'],
+  E: ['111', '100', '110', '100', '111'],
+  G: ['111', '100', '101', '101', '111'],
+  I: ['111', '010', '010', '010', '111'],
+  L: ['100', '100', '100', '100', '111'],
+  M: ['101', '111', '111', '101', '101'],
+  N: ['101', '111', '111', '111', '101'],
+  O: ['111', '101', '101', '101', '111'],
+  R: ['110', '101', '110', '101', '101'],
+  S: ['111', '100', '111', '001', '111'],
+  T: ['111', '010', '010', '010', '010'],
+  U: ['101', '101', '101', '101', '111'],
 }
 
-const CELL = 8
+const CELL = 12
 const CANVAS_W = 29 * CELL // 6 digits(3+1 gap) + 2 colons(1+1 gap) - 1
 const CANVAS_H = 9 * CELL
 
-function paint(ctx, timeStr) {
+const TAGLINE = 'BUILDING DREAMS ONE COMMIT AT A TIME'
+const TAG_CELL = 8
+// letter(3) + gap(1), word space = extra 2 cells
+const TAG_COLS =
+  TAGLINE.split(' ').reduce(
+    (acc, word, i) => acc + (i > 0 ? 3 + word.length * 4 - 1 : word.length * 4 - 1),
+    0,
+  ) || 1
+const TAG_W = TAG_COLS * TAG_CELL
+const TAG_H = 7 * TAG_CELL
+
+function paintDigits(ctx, timeStr) {
   ctx.fillStyle = '#120e1a'
   ctx.fillRect(0, 0, CANVAS_W, CANVAS_H)
-  // subtle frame
   ctx.fillStyle = '#241b30'
   ctx.fillRect(0, 0, CANVAS_W, CELL / 2)
   ctx.fillRect(0, CANVAS_H - CELL / 2, CANVAS_W, CELL / 2)
@@ -49,20 +74,60 @@ function paint(ctx, timeStr) {
   }
 }
 
-// In-world digital clock: emissive canvas screen showing the visitor's local
-// time. Mounted on the lakeside stone tower built by build_world.py.
+function paintTagline(ctx) {
+  ctx.clearRect(0, 0, TAG_W, TAG_H)
+  let x = 0
+  for (const ch of TAGLINE) {
+    if (ch === ' ') {
+      x += 4 * TAG_CELL
+      continue
+    }
+    const glyph = GLYPHS[ch]
+    if (!glyph) continue
+    for (let r = 0; r < 5; r += 1) {
+      for (let cc = 0; cc < 3; cc += 1) {
+        if (glyph[r][cc] === '1') {
+          ctx.fillStyle = 'rgba(255, 190, 110, 0.22)'
+          ctx.fillRect(x + cc * TAG_CELL - 1, (r + 1) * TAG_CELL - 1, TAG_CELL + 2, TAG_CELL + 2)
+          ctx.fillStyle = 'rgb(235, 178, 96)'
+          ctx.fillRect(x + cc * TAG_CELL, (r + 1) * TAG_CELL, TAG_CELL, TAG_CELL)
+        }
+      }
+    }
+    x += 4 * TAG_CELL
+  }
+}
+
+function makeTex(canvas) {
+  const tex = new THREE.CanvasTexture(canvas)
+  tex.magFilter = THREE.NearestFilter
+  tex.minFilter = THREE.NearestFilter
+  tex.colorSpace = THREE.SRGBColorSpace
+  return tex
+}
+
+// In-world giant clock: emissive canvas dial showing the visitor's local time,
+// plus a small tagline strip. Mounted on the lakeside clock wall.
 export default function Clock() {
   const rig = useMemo(() => {
     const canvas = document.createElement('canvas')
     canvas.width = CANVAS_W
     canvas.height = CANVAS_H
-    const tex = new THREE.CanvasTexture(canvas)
-    tex.magFilter = THREE.NearestFilter
-    tex.minFilter = THREE.NearestFilter
-    tex.colorSpace = THREE.SRGBColorSpace
-    const mat = new THREE.MeshBasicMaterial({ map: tex, toneMapped: false })
-    const geo = new THREE.PlaneGeometry(4.3, (CANVAS_H / CANVAS_W) * 4.3)
-    return { canvas, tex, mat, geo }
+    const mat = new THREE.MeshBasicMaterial({ map: makeTex(canvas), toneMapped: false })
+
+    const tagCanvas = document.createElement('canvas')
+    tagCanvas.width = TAG_W
+    tagCanvas.height = TAG_H
+    paintTagline(tagCanvas.getContext('2d'))
+    const tagMat = new THREE.MeshBasicMaterial({
+      map: makeTex(tagCanvas),
+      transparent: true,
+      toneMapped: false,
+    })
+
+    const geo = new THREE.PlaneGeometry(8.2, (CANVAS_H / CANVAS_W) * 8.2)
+    const tagGeo = new THREE.PlaneGeometry(5.2, (TAG_H / TAG_W) * 5.2)
+    return { canvas, tex: mat.map, mat, tagMat, geo, tagGeo }
   }, [])
 
   // redraw when the second flips
@@ -74,7 +139,7 @@ export default function Clock() {
       const str = `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`
       if (str !== last) {
         last = str
-        paint(rig.canvas.getContext('2d'), str)
+        paintDigits(rig.canvas.getContext('2d'), str)
         rig.tex.needsUpdate = true
       }
     }
@@ -88,14 +153,28 @@ export default function Clock() {
     let raf
     const tick = (t) => {
       rig.mat.color.setScalar(0.92 + Math.sin(t * 0.0021) * 0.08)
+      rig.tagMat.color.setScalar(rig.mat.color.value)
       raf = requestAnimationFrame(tick)
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
   }, [rig])
 
-  const { x, y, z } = LANDMARKS.clockScreen
+  useEffect(() => () => {
+    rig.tex.dispose()
+    rig.mat.dispose()
+    rig.tagMat.map?.dispose()
+    rig.tagMat.dispose()
+    rig.geo.dispose()
+    rig.tagGeo.dispose()
+  }, [rig])
+
+  const s = LANDMARKS.clockScreen
+  const t = LANDMARKS.clockTagline
   return (
-    <mesh geometry={rig.geo} material={rig.mat} position={[x, y, z]} rotation={[0, Math.PI / 2, 0]} />
+    <group>
+      <mesh geometry={rig.geo} material={rig.mat} position={[s.x, s.y, s.z]} rotation={[0, Math.PI / 2, 0]} />
+      <mesh geometry={rig.tagGeo} material={rig.tagMat} position={[t.x, t.y, t.z]} rotation={[0, Math.PI / 2, 0]} />
+    </group>
   )
 }

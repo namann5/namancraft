@@ -40,10 +40,12 @@ ZONE_Y = 7
 LAKE = (-44, 8, -22, 40)        # ellipse-ish basin rect
 LAKE_BOTTOM = 2
 
-# Loop 9 landmarks
-HOUSE_PAD = (20, 41, 41, 57)    # flatten rect (blender x,z)
+# Loop 9/10 landmarks
+HOUSE_PAD = (15, 43, 38, 62)    # flatten rect (blender x,z)
 HOUSE_Y = 9                     # plateau height of the house plot
-CLOCK_PAD = (-29, 5, -19, 17)   # lakeside knoll for the clock tower
+CLOCK_PAD = (-29, 3, -19, 19)   # lakeside knoll for the clock wall
+POND_CENTER = (11, 46)          # foreground pond (script coords)
+POND_RX, POND_RZ = 3.4, 2.4
 
 
 def in_rect(x, z, r):
@@ -157,6 +159,7 @@ def fill_world(heights):
     add_fire_pit(grid)
     add_house(grid, heights)
     add_garden(grid)
+    add_pond(grid, heights)
     add_path_branch(grid, heights)
     add_clock_tower(grid, heights)
     plant_forest(grid, heights)
@@ -192,20 +195,20 @@ def add_fire_pit(grid):
 
 # ---------------------------------------------------------------- house
 
-HX0, HX1 = 22, 32              # wall footprint (blender x)
-HZ0, HZ1 = 44, 54              # wall footprint (blender z)
-WALL_H = 5                     # wall height above floor
+HX0, HX1 = 20, 34              # wall footprint (blender x) — 15 wide
+HZ0, HZ1 = 42, 56              # wall footprint (blender z) — 15 deep
+WALL_H = 7                     # two storeys
 DOOR_Z = (49, 50)              # door gap on the west face
 CHIMNEY = (30, 52)             # chimney column (x, z)
-ROOF_LEVELS = 5
+ROOF_LEVELS = 6
 
 LANTERN_SPOTS = []
 
 
 def add_house(grid, heights):
-    """NamanCraft home base: stone base, plank walls, log posts, sloped roof,
-    glowing windows, balcony, lanterns, vines. Interior stays hollow for a
-    future 'About' zone."""
+    """NamanCraft home base: stone base, plank walls, log posts, steep roof,
+    two glowing window bands per floor, balconies w/ lanterns, flower boxes,
+    vines. Interior stays hollow for a future 'About' interior."""
     y = HOUSE_Y
 
     # stone foundation ring under the walls
@@ -219,12 +222,7 @@ def add_house(grid, heights):
         for z in range(HZ0, HZ1 + 1):
             vx.set_block(grid, x, y, z, "plank")
 
-    def window_band(faces):
-        """faces: list of (axis, fixed, lo, hi) wall runs to punch windows into."""
-        return faces
-
-    # walls with openings: corners are logs, bands have windows/door gaps
-    top = y + WALL_H
+    # walls: corners are logs, windows in two bands (two storeys)
     for h in range(1, WALL_H + 1):
         wy = y + h
         for x in range(HX0, HX1 + 1):
@@ -235,71 +233,89 @@ def add_house(grid, heights):
                     continue
                 corner = on_x_edge and on_z_edge
                 block = "log" if corner else "plank"
-                # west face (x == HX0): door + balcony door + windows
                 if x == HX0 and not corner:
                     if z in DOOR_Z and h <= 2:
                         continue                      # front door gap
                     if z in DOOR_Z and h in (4, 5):
                         continue                      # balcony door gap
-                    if z in (45, 46, 52, 53) and h in (3, 4):
+                    if z in (44, 45, 46, 53, 54, 55) and h in (3, 6):
                         block = "window"
-                # east face: garden-facing windows
                 if x == HX1 and not corner:
-                    if z in (47, 48, 50, 51) and h in (3, 4):
+                    if z in (45, 46, 47, 51, 52, 53) and h in (3, 6):
                         block = "window"
-                # south face (z == HZ1): wide window row
                 if z == HZ1 and not corner:
-                    if x in (24, 25, 27, 28, 29, 30) and h in (3,):
+                    if x in (23, 24, 26, 27, 29, 30, 31, 32) and h in (3, 6):
                         block = "window"
-                # north face (z == HZ0): a couple of windows
                 if z == HZ0 and not corner:
-                    if x in (26, 27, 29, 30) and h in (3,):
+                    if x in (23, 24, 30, 31) and h in (3, 6):
                         block = "window"
                 vx.set_block(grid, x, wy, z, block)
 
-    # sloped roof: stepped layers overhanging on the z sides, ridge along x
+    # sloped steep roof: stepped layers overhanging on the z sides
     ridge_y = None
     for k in range(ROOF_LEVELS):
         ry = y + WALL_H + 1 + k
         z_lo = HZ0 - 1 + k
         z_hi = HZ1 + 1 - k
-        for x in range(HX0 - 1, HX1 + 2):
+        for x in range(HX0 - 2, HX1 + 3):
             for z in range(z_lo, z_hi + 1):
-                edge = z in (z_lo, z_hi)
-                vx.set_block(grid, x, ry, z, "roof" if edge else "roof")
+                vx.set_block(grid, x, ry, z, "roof")
         ridge_y = ry
-    # cap ridge
-    for x in range(HX0 - 1, HX1 + 2):
+    for x in range(HX0 - 2, HX1 + 3):
         vx.set_block(grid, x, ridge_y + 1, (HZ0 + HZ1) // 2, "roof")
 
-    # gable ends: fill triangles under the roofline
-    mid_z = (HZ0 + HZ1) // 2
+    # gable ends filled under the roofline
     for gx in (HX0, HX1):
         for z in range(HZ0, HZ1 + 1):
             rise = min(z - HZ0, HZ1 - z)
-            for h in range(WALL_H + 1, WALL_H + 1 + rise + 1):
-                vx.set_block(grid, gx, y + h, z, "plank")
+            for h in range(WALL_H + 1, WALL_H + 1 + rise + 2):
+                if h <= WALL_H + ROOF_LEVELS:
+                    vx.set_block(grid, gx, y + h, z, "plank")
 
     # chimney through the roof
     cx, cz = CHIMNEY
     for h in range(1, ROOF_LEVELS + 4):
         vx.set_block(grid, cx, y + WALL_H + h, cz, "stone")
 
-    # balcony on the west face
-    by = y + 4
-    for z in range(DOOR_Z[0] - 2, DOOR_Z[1] + 3):
-        vx.set_block(grid, HX0 - 1, by, z, "plank")
-    for z in range(DOOR_Z[0] - 2, DOOR_Z[1] + 3):
-        if z in (DOOR_Z[0] - 2, DOOR_Z[1] + 2):
-            vx.set_block(grid, HX0 - 2, by, z, "log")       # rail posts
-            vx.set_block(grid, HX0 - 2, by + 1, z, "flame")  # lantern tops
-            LANTERN_SPOTS.append((HX0 - 2, by + 1.5, z))
-        else:
-            vx.set_block(grid, HX0 - 2, by + 1, z, "plank")  # rail
+    def balcony(axis, fixed, lo, hi, outward=1):
+        """Plank platform (2 deep) + log corner posts w/ lantern flames + rail."""
+        plat = y + 4
 
-    # vines: green patches trailing from the eaves
-    spots = [(23, HZ0 - 1), (26, HZ0 - 1), (29, HZ0 - 1), (25, HZ1 + 1),
-             (28, HZ1 + 1), (31, HZ1 + 1), (HX0 - 1, 45), (HX0 - 1, 53)]
+        def put(t, off, h, block):
+            fx = fixed - outward * off if axis == 'x' else t
+            fz = t if axis == 'x' else fixed - outward * off
+            vx.set_block(grid, fx, plat + h, fz, block)
+
+        for t in range(lo, hi + 1):
+            put(t, 0, 0, "plank")
+            put(t, 1, 0, "plank")
+        for t in (lo, hi):
+            put(t, 2, 0, "log")
+            put(t, 2, 1, "flame")
+            fx = fixed - outward * 2 if axis == 'x' else t
+            fz = t if axis == 'x' else fixed - outward * 2
+            LANTERN_SPOTS.append((fx, plat + 1.5, fz))
+        for t in range(lo, hi + 1):
+            if t not in (lo, hi):
+                put(t, 2, 1, "plank")
+
+    balcony('x', HX0, DOOR_Z[0] - 2, DOOR_Z[1] + 2, 1)     # west face
+    balcony('z', HZ1, HX0 + 3, HX0 + 8, -1)                # south face
+
+    # flower boxes under the first-floor front windows
+    for bz in (44, 45, 46, 53, 54, 55):
+        vx.set_block(grid, HX0 - 1, y + 1, bz, "plank")
+        vx.set_block(grid, HX0 - 1, y + 2, bz,
+                     ("flower_pink", "flower_red", "flower_yellow")[bz % 3])
+    for bx in (23, 24, 30, 31):
+        vx.set_block(grid, bx, y + 1, HZ1 + 1, "plank")
+        vx.set_block(grid, bx, y + 2, HZ1 + 1,
+                     ("flower_pink", "flower_yellow")[bx % 2])
+
+    # vines trailing from the eaves
+    spots = [(21, HZ0 - 1), (25, HZ0 - 1), (28, HZ0 - 1), (33, HZ0 - 1),
+             (22, HZ1 + 1), (26, HZ1 + 1), (31, HZ1 + 1), (HX0 - 1, 43),
+             (HX0 - 1, 47), (HX0 - 1, 52), (HX0 - 1, 56)]
     for i, (vx_, vz) in enumerate(spots):
         hang = 2 if i % 2 == 0 else 1
         for hh in range(hang):
@@ -312,10 +328,28 @@ def add_house(grid, heights):
         LANTERN_SPOTS.append((HX0 - 1, y + 2.5, dz))
 
 
+def add_pond(grid, heights):
+    """Foreground pond between the path and the menu view; player-wadeable."""
+    cx, cz = POND_CENTER
+    for zz in range(cz - 4, cz + 5):
+        for xx in range(cx - 5, cx + 6):
+            d = ((xx - cx) / POND_RX) ** 2 + ((zz - cz) / POND_RZ) ** 2
+            ix, iz = xx - ORIGIN_X, zz - ORIGIN_Z
+            if not (0 <= ix < SIZE_X and 0 <= iz < SIZE_Z):
+                continue
+            top = heights[iz][ix]
+            if d <= 1.0:
+                for yy in range(3, top + 1):
+                    vx.set_block(grid, xx, yy, zz, "water")
+                heights[iz][ix] = min(top, 3)
+            elif d <= 1.45 and top >= WATER_LEVEL:
+                vx.set_block(grid, xx, top, zz, "sand")
+
+
 def add_garden(grid):
     """Tilled crop rows + flowers east of the house."""
     gy = HOUSE_Y
-    x0, x1, z0, z1 = 34, 40, 46, 52
+    x0, x1, z0, z1 = 36, 42, 45, 55
     for x in range(x0, x1 + 1):
         for z in range(z0, z1 + 1):
             edge = x in (x0, x1) or z in (z0, z1)
@@ -341,15 +375,15 @@ def add_path_branch(grid, heights):
     z_line = 49
     for x in range(2, HX0):
         top = max(ground_top(heights, x, z_line), PATH_Y if x < 4 else 0)
-        if in_rect(x, z_line, (2, 41, 19, 57)):
+        if in_rect(x, z_line, HOUSE_PAD):
             top = HOUSE_Y
         elif abs(x - 12) > 8:
             top = ground_top(heights, x, z_line)
         vx.set_block(grid, x, top, z_line, "path" if x % 2 == 0 else "stone")
         if x % 7 == 3:
-            vx.set_block(grid, x, top + 1, z_line - 2, "log")
-            vx.set_block(grid, x, top + 2, z_line - 2, "flame")
-            LANTERN_SPOTS.append((x, top + 2.5, z_line - 2))
+            vx.set_block(grid, x, top + 1, z_line + 2, "log")
+            vx.set_block(grid, x, top + 2, z_line + 2, "flame")
+            LANTERN_SPOTS.append((x, top + 2.5, z_line + 2))
         if x % 5 == 1:
             fx = x + 1
             ft = ground_top(heights, fx, z_line + 3)
@@ -358,23 +392,47 @@ def add_path_branch(grid, heights):
 
 
 def add_clock_tower(grid, heights):
-    """Stone tower with a wooden hood; the glowing screen is added at runtime."""
-    tx0, tx1, tz0, tz1 = -26, -24, 9, 11      # 3x3 stone column
+    """Giant weathered clock wall by the lake: stone slab, glowing frame,
+    dark dial backing, wooden cap, corner posts. The screen plane is runtime."""
     ty = heights[ORIGIN_Z + 10][ORIGIN_X + -25]
-    for h in range(8):
-        for x in range(tx0, tx1 + 1):
-            for z in range(tz0, tz1 + 1):
-                edge = x in (tx0, tx1) or z in (tz0, tz1)
-                if edge or h == 0:
-                    vx.set_block(grid, x, ty + h, z, "stone" if h < 6 else "plank")
-    # hood: two stepped plank layers + log posts
-    for lvl, (hx0, hx1, hz0, hz1) in enumerate([(-27, -23, 8, 12), (-26, -24, 9, 11)]):
-        hy = ty + 8 + lvl
-        for x in range(hx0, hx1 + 1):
-            for z in range(hz0, hz1 + 1):
-                vx.set_block(grid, x, hy, z, "roof")
-    for x, z in [(-27, 8), (-27, 12), (-23, 8), (-23, 12)]:
-        vx.set_block(grid, x, ty + 7, z, "log")
+
+    def box(x0, x1, y0, y1, z0, z1, block):
+        for xx in range(x0, x1 + 1):
+            for yy in range(y0, y1 + 1):
+                for zz in range(z0, z1 + 1):
+                    vx.set_block(grid, xx, yy, zz, block)
+
+    # main wall slab (long axis along z, face looking east toward the plaza)
+    box(-26, -24, ty, ty + 11, 4, 16, "stone")
+    # weathering: mossy stone speckle rows
+    for zz in range(5, 16, 3):
+        for yy in (ty + 1, ty + 2):
+            if (yy + zz) % 4 == 0:
+                vx.set_block(grid, -24, yy, zz, "vine")
+    # cap: roof layer + lip
+    box(-27, -23, ty + 12, ty + 12, 3, 17, "roof")
+    box(-26, -24, ty + 13, ty + 13, 4, 16, "roof")
+    # freestanding corner posts
+    for px in (-28, -22):
+        for pz in (3, 17):
+            box(px, px, ty, ty + 11, pz, pz, "log")
+            vx.set_block(grid, px, ty + 12, pz, "flame")
+            LANTERN_SPOTS.append((px, ty + 12.5, pz))
+    # flames on the cap corners
+    for cx_, cz_ in [(-27, 5), (-27, 15), (-23, 5), (-23, 15)]:
+        vx.set_block(grid, cx_, ty + 13, cz_, "flame")
+
+    # glowing frame on the east face (outermost layer x = -24)
+    for yy in range(ty + 4, ty + 10):                 # verticals z=5 / z=15
+        for zz in (5, 15):
+            vx.set_block(grid, -24, yy, zz, "clockglow")
+    for zz in range(6, 15):                           # horizontals top/bottom
+        for yy in (ty + 4, ty + 9):
+            vx.set_block(grid, -24, yy, zz, "clockglow")
+    # dark dial backing between the glow frame
+    for yy in range(ty + 5, ty + 9):
+        for zz in range(6, 15):
+            vx.set_block(grid, -24, yy, zz, "clockdark")
 
 
 def tree(grid, x, z, ground, leaf, trunk_h=None):
@@ -428,6 +486,15 @@ def plant_forest(grid, heights):
                 if ft > WATER_LEVEL:
                     vx.set_block(grid, jx + 2, ft + 1, jz,
                                  ("flower_pink", "flower_yellow", "flower_red")[count % 3])
+
+    # hand-placed framing cherries flanking the menu view corridor
+    for fx, fz in [(-11, 30), (16, 31), (-12, 52), (-9, 62)]:
+        if in_any_rect(fx, fz, keepout, margin=1):
+            continue
+        ft = ground_top(heights, fx, fz)
+        if ft > WATER_LEVEL + 1:
+            tree(grid, fx, fz, ft, "blossom", trunk_h=5)
+            count += 1
 
 
 def add_sign(grid, rect, zone):
@@ -506,22 +573,33 @@ def main():
     # Loop 9: house + nature palette
     materials.update(register_block("log", "log", "#6b4a2b", jitter=12, seed=30))
     materials.update(register_block("leaves", "leaves", "#4e8f3a", jitter=20,
-                                    speckle=0.10, speckle_hex="#3a6f2b", seed=31))
+                                    speckle=0.10, speckle_hex="#3a6f2b",
+                                    emissive=0.10, seed=31))
     materials.update(register_block("blossom", "blossom", "#f2a7c3", jitter=14,
-                                    speckle=0.08, speckle_hex="#ffd9e8", seed=32))
+                                    speckle=0.08, speckle_hex="#ffd9e8",
+                                    emissive=0.32, seed=32))
     materials.update(register_block("roof", "roof", "#5a3a28", jitter=12, seed=33))
     materials.update(register_block("window", "window", "#ffc97e", jitter=6,
                                     emissive=1.0, seed=34))
     materials.update(register_block("vine", "vine", "#3f7d3c", jitter=16,
                                     speckle=0.08, speckle_hex="#2c5c2a", seed=35))
     materials.update(register_block("farm", "farm", "#5b3a22", jitter=14, seed=36))
-    materials.update(register_block("crop", "crop", "#5da53f", jitter=16, seed=37))
+    materials.update(register_block("crop", "crop", "#5da53f", jitter=16,
+                                    emissive=0.08, seed=37))
     materials.update(register_block("flower_pink", "flower_pink", "#ff8fb3",
-                                    jitter=10, speckle=0.12, speckle_hex="#fff0f5", seed=38))
+                                    jitter=10, speckle=0.12, speckle_hex="#fff0f5",
+                                    emissive=0.30, seed=38))
     materials.update(register_block("flower_yellow", "flower_yellow", "#ffd166",
-                                    jitter=10, speckle=0.12, speckle_hex="#fff3c4", seed=39))
+                                    jitter=10, speckle=0.12, speckle_hex="#fff3c4",
+                                    emissive=0.30, seed=39))
     materials.update(register_block("flower_red", "flower_red", "#e04848",
-                                    jitter=10, speckle=0.12, speckle_hex="#ffb3a0", seed=40))
+                                    jitter=10, speckle=0.12, speckle_hex="#ffb3a0",
+                                    emissive=0.26, seed=40))
+    # Loop 10: giant clock wall
+    materials.update(register_block("clockglow", "clockglow", "#ffcf8a",
+                                    jitter=5, emissive=1.0, seed=41))
+    materials.update(register_block("clockdark", "clockdark", "#141420",
+                                    jitter=6, seed=42))
     for name in ZONES:
         materials.update(register_block(
             f"beacon_{name}", f"beacon_{name}",
@@ -554,11 +632,16 @@ def main():
     # Landmark positions for runtime effects. Grid (x, up, z) -> three (x, up, -z).
     clock_y = heights[ORIGIN_Z + 10][ORIGIN_X + -25]
     landmarks = {
-        # screen plane sits just off the tower's east face, facing the plaza
-        "clockScreen": [-23.45, clock_y + 5.6, 10.5],
+        # screen plane sits just off the clock wall's east face (opening
+        # spans script z 6..14, dial rows ty+5..ty+8)
+        "clockScreen": [-22.92, clock_y + 7, -10],
+        "clockTagline": [-22.90, clock_y + 2.9, -10],
         "clockGround": clock_y,
         "chimneyTop": [CHIMNEY[0] + 0.5, HOUSE_Y + WALL_H + ROOF_LEVELS + 3.4, -(CHIMNEY[1] + 0.5)],
-        "houseCenter": [(HOUSE_PAD[0] + HOUSE_PAD[2]) / 2 + 0.5, HOUSE_Y, -(HOUSE_PAD[1] + HOUSE_PAD[3]) / 2 - 0.5],
+        "houseCenter": [(HX0 + HX1) / 2 + 0.5, HOUSE_Y, -(HZ0 + HZ1) / 2 - 0.5],
+        # warm light anchors: front door glow + clock face glow
+        "houseLight": [HX0 - 1.5, HOUSE_Y + 5.5, -(DOOR_Z[0] + DOOR_Z[1]) / 2],
+        "clockLight": [-21.5, clock_y + 7, -10],
         "lanterns": [[x, y, -z] for (x, y, z) in LANTERN_SPOTS],
     }
     print("LANDMARKS " + json.dumps(landmarks))

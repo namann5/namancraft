@@ -38,6 +38,22 @@ export const ZONES = {
     accent: '#ff9d5c',
     pos: [-14, -82],
   },
+  home: {
+    key: 'home',
+    title: 'Home Base',
+    tagline: "Naman's place",
+    accent: '#ffc97e',
+    pos: [16, -49],
+    verb: 'Enter',
+  },
+  journey: {
+    key: 'journey',
+    title: 'The Clock',
+    tagline: 'Building dreams, one commit at a time',
+    accent: '#ffd9a0',
+    pos: [-19, -10],
+    verb: 'View Journey',
+  },
 }
 
 export function nearestZone(x, z) {

@@ -62,25 +62,33 @@ function ChimneySmoke() {
   )
 }
 
-const LEAF_COUNT = 46
-const LEAF_AREA = { cx: 27, cz: -48, r: 17, top: 21, ground: 8 }
+const LEAF_COUNT = 72
+// two drift fields: around the house + along the menu-view corridor
+const LEAF_FIELDS = [
+  { cx: 27, cz: -48, r: 15, top: 21, ground: 9 },
+  { cx: -2, cz: -26, r: 20, top: 19, ground: 8 },
+]
 
-// Falling blossom/leaf petals around the house.
+// Falling blossom petals drifting through the scene.
 function FallingLeaves() {
   const meshRef = useRef(null)
   const dummy = useMemo(() => new THREE.Object3D(), [])
   const state = useMemo(
     () =>
-      Array.from({ length: LEAF_COUNT }, () => ({
-        x: LEAF_AREA.cx + (Math.random() - 0.5) * LEAF_AREA.r * 2,
-        z: LEAF_AREA.cz + (Math.random() - 0.5) * LEAF_AREA.r * 2,
-        y: LEAF_AREA.ground + Math.random() * (LEAF_AREA.top - LEAF_AREA.ground),
-        fall: 0.55 + Math.random() * 0.7,
-        swayAmp: 0.6 + Math.random() * 1.2,
-        swayFreq: 0.5 + Math.random() * 0.9,
-        phase: Math.random() * Math.PI * 2,
-        spin: Math.random() * Math.PI,
-      })),
+      Array.from({ length: LEAF_COUNT }, (_, i) => {
+        const f = LEAF_FIELDS[i % LEAF_FIELDS.length]
+        return {
+          field: f,
+          x: f.cx + (Math.random() - 0.5) * f.r * 2,
+          z: f.cz + (Math.random() - 0.5) * f.r * 2,
+          y: f.ground + Math.random() * (f.top - f.ground),
+          fall: 0.55 + Math.random() * 0.7,
+          swayAmp: 0.6 + Math.random() * 1.2,
+          swayFreq: 0.5 + Math.random() * 0.9,
+          phase: Math.random() * Math.PI * 2,
+          spin: Math.random() * Math.PI,
+        }
+      }),
     [],
   )
 
@@ -90,11 +98,12 @@ function FallingLeaves() {
     const t = clock.elapsedTime
     for (let i = 0; i < LEAF_COUNT; i += 1) {
       const p = state[i]
+      const f = p.field
       p.y -= p.fall * dt
-      if (p.y < LEAF_AREA.ground) {
-        p.y = LEAF_AREA.top
-        p.x = LEAF_AREA.cx + (Math.random() - 0.5) * LEAF_AREA.r * 2
-        p.z = LEAF_AREA.cz + (Math.random() - 0.5) * LEAF_AREA.r * 2
+      if (p.y < f.ground) {
+        p.y = f.top
+        p.x = f.cx + (Math.random() - 0.5) * f.r * 2
+        p.z = f.cz + (Math.random() - 0.5) * f.r * 2
       }
       dummy.position.set(
         p.x + Math.sin(t * p.swayFreq + p.phase) * p.swayAmp,

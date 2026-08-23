@@ -65,6 +65,34 @@ export function ProjectsSection({ onClose }) {
   )
 }
 
+export function HomeSection({ onClose }) {
+  const facts = [
+    { k: 'Role', v: 'Full Stack Developer' },
+    { k: 'Base', v: 'Built from scratch, block by block' },
+    { k: 'Stack', v: 'React · Node · Python · Cloud' },
+    { k: 'Status', v: 'Open to opportunities' },
+  ]
+  return (
+    <McPanel title="Naman's Home Base" subtitle="Every dev needs a spawn point" onClose={onClose}>
+      <p className="text-sm leading-relaxed text-[#c9cfc4]">
+        Welcome home. This is where Naman logs off the internet and logs into
+        side projects — a cozy base camp for building software that ships.
+      </p>
+      <ul className="mt-5 flex flex-col gap-2">
+        {facts.map((f) => (
+          <li key={f.k} className="mc-slot flex items-center gap-4 px-4 py-3">
+            <span className="font-pixel w-16 shrink-0 text-[10px] text-[#ffe066]/80">{f.k}</span>
+            <span className="text-sm text-[#c9cfc4]">{f.v}</span>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-5 text-center text-[10px] uppercase tracking-[0.3em] text-[#9aa39a]/70">
+        Interior decorating in progress — full About room coming soon
+      </p>
+    </McPanel>
+  )
+}
+
 export function JourneySection({ onClose }) {
   return (
     <McPanel title="My Journey" subtitle="The road so far" onClose={onClose} wide>

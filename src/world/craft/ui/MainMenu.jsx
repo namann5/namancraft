@@ -2,13 +2,14 @@ import { useMemo } from 'react'
 import { sfx } from '../sound'
 import { LINKS, SPLASHES } from '../data/portfolio'
 import MusicToggle from './MusicToggle'
+import VoxelIcon from './VoxelIcon'
 
 const SECTIONS = [
-  { key: 'projects', label: 'Projects' },
-  { key: 'journey', label: 'My Journey' },
-  { key: 'inventory', label: 'Inventory' },
-  { key: 'achievements', label: 'Achievements' },
-  { key: 'connect', label: 'Connect' },
+  { key: 'projects', label: 'Projects', icon: 'chest' },
+  { key: 'journey', label: 'My Journey', icon: 'map' },
+  { key: 'inventory', label: 'Inventory', icon: 'sword' },
+  { key: 'achievements', label: 'Achievements', icon: 'trophy' },
+  { key: 'connect', label: 'Connect', icon: 'enderchest' },
 ]
 
 export default function MainMenu({ ready, entering, onPlay, onSection, touch }) {
@@ -54,7 +55,7 @@ export default function MainMenu({ ready, entering, onPlay, onSection, touch }) 
             Full Stack Developer
           </p>
           <p className="mt-3 text-[10px] uppercase tracking-[0.42em] text-[#ffe066]/90 [text-shadow:1px_1px_0_rgba(0,0,0,0.8)]">
-            An Open-World Developer Portfolio
+            Explore • Build • Create
           </p>
         </div>
 
@@ -68,8 +69,9 @@ export default function MainMenu({ ready, entering, onPlay, onSection, touch }) 
               onPlay()
             }}
             onMouseEnter={sfx.hover}
-            className="mc-btn mc-btn--primary font-pixel h-[64px] w-full text-base tracking-wide max-sm:h-[58px] max-sm:text-sm"
+            className="mc-btn mc-btn--primary font-pixel flex h-[64px] w-full items-center justify-center gap-3 text-base tracking-wide max-sm:h-[58px] max-sm:text-sm"
           >
+            <VoxelIcon type="grass" size={22} />
             {!ready ? 'LOADING…' : 'PLAY WORLD'}
           </button>
 
@@ -84,8 +86,9 @@ export default function MainMenu({ ready, entering, onPlay, onSection, touch }) 
                   onSection(s.key)
                 }}
                 onMouseEnter={sfx.hover}
-                className={`mc-btn font-pixel h-[46px] text-[11px] ${i === SECTIONS.length - 1 ? 'col-span-2 max-sm:col-span-1' : ''}`}
+                className={`mc-btn font-pixel flex h-[46px] items-center justify-center gap-2.5 text-[11px] ${i === SECTIONS.length - 1 ? 'col-span-2 max-sm:col-span-1' : ''}`}
               >
+                <VoxelIcon type={s.icon} size={16} />
                 {s.label.toUpperCase()}
               </button>
             ))}

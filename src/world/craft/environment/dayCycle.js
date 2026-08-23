@@ -51,24 +51,24 @@ export function smoothstep(a, b, x) {
 }
 
 // Keyframes over sun elevation e (-1..1). Dusk leans pink/purple rather
-// than flat orange; nights are deep blue-violet.
+// than flat orange; nights are readable deep blue-violet, never black.
 export const ZENITH = makeRamp([
-  [-1.0, '#070a18'],
-  [-0.25, '#141034'],
+  [-1.0, '#0d1226'],
+  [-0.25, '#1b1740'],
   [0.0, '#2c3a66'],
   [0.35, '#4d7ec9'],
   [1.0, '#3f74c9'],
 ])
 export const HORIZON = makeRamp([
-  [-1.0, '#0e1533'],
-  [-0.25, '#221b45'],
+  [-1.0, '#182246'],
+  [-0.25, '#2c2757'],
   [0.0, '#e08e9c'],
   [0.35, '#bfd9ef'],
   [1.0, '#cfe6f5'],
 ])
 export const FOG = makeRamp([
-  [-1.0, '#0c1024'],
-  [-0.25, '#171233'],
+  [-1.0, '#141b38'],
+  [-0.25, '#201c44'],
   [0.0, '#bd7f8e'],
   [0.35, '#c7d8e8'],
   [1.0, '#d4e4f2'],
@@ -80,13 +80,13 @@ export const SUNLIGHT = makeRamp([
   [1.0, '#fff6e6'],
 ])
 export const HEMI_SKY = makeRamp([
-  [-0.25, '#26224e'],
+  [-0.25, '#3a4784'],
   [0.0, '#8f7ba0'],
   [0.4, '#ffd9a0'],
   [1.0, '#cfe0f0'],
 ])
 export const HEMI_GROUND = makeRamp([
-  [-0.25, '#141220'],
+  [-0.25, '#232946'],
   [0.0, '#4a3b2f'],
   [1.0, '#5a4a38'],
 ])

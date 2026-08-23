@@ -138,6 +138,57 @@ const ICONS = {
       <rect x="11" y="4" width="1" height="1" fill="#ffd166" />
     </g>
   ),
+  grass: (
+    <g>
+      <polygon points="2,4 8,1 14,4 8,7" fill="#7ec850" />
+      <polygon points="8,1 14,4 14,11 8,14" fill="#6bb043" />
+      <polygon points="2,4 8,7 8,14 2,11" fill="#5c9a38" />
+      <polygon points="2,11 8,14 14,11 14,13 8,16 2,13" fill="#7a4a2b" />
+      <polygon points="2,4 8,7 8,9 2,6" fill="#95d86a" />
+      <rect x="5" y="3" width="1" height="1" fill="#a8e58a" />
+      <rect x="10" y="3" width="1" height="1" fill="#a8e58a" />
+    </g>
+  ),
+  map: (
+    <g>
+      <rect x="2" y="3" width="12" height="10" fill="#e8dcbe" />
+      <rect x="2" y="3" width="12" height="1" fill="#cfc0a0" />
+      <rect x="2" y="12" width="12" height="1" fill="#cfc0a0" />
+      <polyline
+        points="3,11 6,8 8,10 11,5"
+        fill="none"
+        stroke="#c0392b"
+        strokeWidth="1"
+        strokeDasharray="2 1"
+      />
+      <rect x="10" y="4" width="2" height="2" fill="#3ddc84" />
+      <rect x="3" y="10" width="2" height="2" fill="#5ec8f0" />
+    </g>
+  ),
+  trophy: (
+    <g>
+      <rect x="5" y="2" width="6" height="6" fill="#f2c14e" />
+      <rect x="5" y="2" width="2" height="6" fill="#ffe066" />
+      <rect x="4" y="3" width="1" height="3" fill="#d9a52f" />
+      <rect x="11" y="3" width="1" height="3" fill="#d9a52f" />
+      <rect x="6" y="8" width="4" height="2" fill="#d9a52f" />
+      <rect x="5" y="10" width="6" height="2" fill="#8a5a2b" />
+      <rect x="4" y="12" width="8" height="2" fill="#a06a33" />
+      <rect x="6" y="4" width="4" height="1" fill="#fff3c4" opacity="0.7" />
+    </g>
+  ),
+  enderchest: (
+    <g>
+      <rect x="2" y="6" width="12" height="8" fill="#2c2140" />
+      <rect x="2" y="3" width="12" height="3" fill="#38294f" />
+      <rect x="2" y="6" width="12" height="1" fill="#191226" />
+      <rect x="2" y="13" width="12" height="1" fill="#191226" />
+      <rect x="6" y="7" width="4" height="4" fill="#12c2a0" />
+      <rect x="7" y="8" width="2" height="2" fill="#5cf5d4" />
+      <rect x="3" y="4" width="2" height="1" fill="#12c2a0" opacity="0.65" />
+      <rect x="11" y="4" width="2" height="1" fill="#12c2a0" opacity="0.65" />
+    </g>
+  ),
 }
 
 export default function VoxelIcon({ type, size = 32 }) {

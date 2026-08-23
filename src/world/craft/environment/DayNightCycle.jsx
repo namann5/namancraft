@@ -16,6 +16,7 @@ import {
   HEMI_GROUND,
   SUN_DISC,
 } from './dayCycle'
+import { LANDMARKS } from './landmarks'
 
 const MOON_DIR = new THREE.Vector3(-40, 55, 30).normalize()
 const tmpB = new THREE.Color()
@@ -29,8 +30,8 @@ function setTmp(ramp, x) {
 
 // local ramp for cloud tinting
 const CLOUD_TINT = makeRamp([
-  [-1.0, '#232a44'],
-  [-0.2, '#2b3350'],
+  [-1.0, '#39456e'],
+  [-0.2, '#45507c'],
   [0.0, '#ffc9a0'],
   [0.4, '#fff2dd'],
   [1.0, '#ffffff'],
@@ -59,14 +60,14 @@ export default function DayNightCycle() {
         dir.intensity = 0.5 + daylight * 1.9
       } else {
         dir.position.copy(MOON_DIR).multiplyScalar(110)
-        dir.color.set('#8fa3d9')
-        dir.intensity = 0.28
+        dir.color.set('#a8bcf0')
+        dir.intensity = 0.62
       }
     }
 
     const hemi = hemiRef.current
     if (hemi) {
-      hemi.intensity = 0.2 + daylight * 0.5
+      hemi.intensity = 0.48 + daylight * 0.42
       hemi.color.copy(setTmp(HEMI_SKY, e))
       hemi.groundColor.copy(setTmp(HEMI_GROUND, e))
     }
@@ -90,11 +91,11 @@ export default function DayNightCycle() {
       u.uStar.value = smoothstep01((0.06 - e) / 0.14)
     }
 
-    // fog tracks the horizon, thicker at night
+    // fog tracks the horizon; only slightly thicker at night so terrain reads
     const fog = scene.fog
     if (fog?.isFogExp2) {
       fog.color.copy(setTmp(FOG, e))
-      fog.density = 0.0038 * (1 + (1 - daylight) * 0.6)
+      fog.density = 0.0038 * (1 + (1 - daylight) * 0.15)
     }
 
     // clouds: white at noon, peach at dusk, slate at night
@@ -110,6 +111,22 @@ export default function DayNightCycle() {
   return (
     <>
       <hemisphereLight ref={hemiRef} args={['#ffd9a0', '#4a3b2f', 0.7]} />
+      {/* warm lantern glow spilling from the house front door */}
+      <pointLight
+        position={[LANDMARKS.houseLight.x, LANDMARKS.houseLight.y, LANDMARKS.houseLight.z]}
+        color="#ffb37a"
+        intensity={34}
+        distance={32}
+        decay={2}
+      />
+      {/* warm glow washing the clock face */}
+      <pointLight
+        position={[LANDMARKS.clockLight.x, LANDMARKS.clockLight.y, LANDMARKS.clockLight.z]}
+        color="#ffd9a0"
+        intensity={26}
+        distance={28}
+        decay={2}
+      />
       <directionalLight
         ref={dirRef}
         color="#ffb36b"
