@@ -1,8 +1,15 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
-import { loadColliders, makeHeightField } from './terrain'
-import { nearestZone } from './zones'
+import {
+  getField,
+  subscribeFields,
+  loadOverworldField,
+  travelFx,
+  useWorldStore,
+} from './dimensions/worldStore'
+import { nearestInteractable } from './dimensions/interactables'
+import { worldMeta } from './dimensions/worlds'
 import { worldControls, playerEye } from './controls'
 import { INTRO_CAM_START } from './controls'
 import { touchInput } from './input'
@@ -62,10 +69,12 @@ export default function Player({
   onEnterDone,
 }) {
   const { camera, gl } = useThree()
-  const fieldPromise = useMemo(() => loadColliders(), [])
+  const world = useWorldStore((s) => s.world)
   const rig = useMemo(createAvatar, [])
   const domRef = useRef(null)
   const lockApi = useRef(null)
+  const worldRef = useRef(world)
+  const introPlacedRef = useRef(false)
   const p = useRef({
     field: null,
     keys: {},
@@ -76,6 +85,7 @@ export default function Player({
     pitch: 0.32,
     nearby: null,
     fov: MENU_FOV,
+    punch: 0, // dimension-travel FOV kick
     introT: 0,
     introDone: false,
     enterT: 0,
@@ -125,35 +135,87 @@ export default function Player({
     }
   }, [camMode, camera, p])
 
-  // world load: place Naman at the intro start and snap the camera behind him
+  // ---- multi-world placement ------------------------------------------
+  // Kicks off the overworld GLB fetch once, then re-places Naman at the
+  // destination spawn every time the active dimension changes. The SAME
+  // avatar rig is kept across all worlds.
   useEffect(() => {
-    let cancelled = false
-    fieldPromise.then((colliders) => {
-      if (cancelled) return
-      p.field = makeHeightField(colliders)
-      A.pos.set(INTRO_START.x, 0, INTRO_START.z)
-      A.pos.y = p.field.groundAt(A.pos.x, A.pos.z)
+    loadOverworldField()
+  }, [])
+
+  const placeAtSpawn = (worldId, { intro = false } = {}) => {
+    const field = getField(worldId)
+    if (!field) return false
+    const sp = worldMeta(worldId).spawn
+    p.field = field
+    p.vy = 0
+    p.grounded = true
+    A.pos.set(sp.x, field.groundAt(sp.x, sp.z), sp.z)
+    p.feetY = A.pos.y
+    A.yaw = sp.yaw
+    A.visYaw = sp.yaw
+    A.moveAmt = 0
+    // camera yaw: 0 puts the boom behind the player looking -Z
+    p.yaw = sp.yaw
+    p.pitch = 0.32
+
+    if (worldId === 'overworld' && intro) {
+      // cinematic title framing (only for the very first spawn)
+      A.pos.set(INTRO_START.x, field.groundAt(INTRO_START.x, INTRO_START.z), INTRO_START.z)
+      p.feetY = A.pos.y
       A.yaw = 0
       A.visYaw = 0
-      p.feetY = A.pos.y
+      p.yaw = 0
       p.restPos.set(
         INTRO_STOP.x + 0.8,
-        p.field.groundAt(INTRO_STOP.x, INTRO_STOP.z) + 2.55,
+        field.groundAt(INTRO_STOP.x, INTRO_STOP.z) + 2.55,
         INTRO_STOP.z + 3.6,
       )
       p.startPos.set(A.pos.x, A.pos.y, A.pos.z)
       p.startCam.set(p.restPos.x, A.pos.y + 3.3, A.pos.z + 4.8)
       camera.position.copy(p.startCam)
       camera.lookAt(A.pos.x, A.pos.y + HEAD_HEIGHT, A.pos.z)
-      playerEye.x = A.pos.x
-      playerEye.y = A.pos.y + EYE_HEIGHT
-      playerEye.z = A.pos.z
-      onReady?.()
-    })
-    return () => {
-      cancelled = true
+    } else {
+      updateBoomCamera(1 / 60, true)
     }
-  }, [fieldPromise, camera, onReady, p])
+    playerEye.x = A.pos.x
+    playerEye.y = A.pos.y + EYE_HEIGHT
+    playerEye.z = A.pos.z
+    if (p.nearby) {
+      p.nearby = null
+      onNearby?.(null)
+    }
+    return true
+  }
+
+  useEffect(() => {
+    worldRef.current = world
+    const firstOverworld = !introPlacedRef.current && world === 'overworld'
+    if (firstOverworld) {
+      const ok = placeAtSpawn(world, { intro: true })
+      if (ok) {
+        introPlacedRef.current = true
+        onReady?.()
+      }
+    } else {
+      placeAtSpawn(world)
+    }
+    // fields may arrive after the world switch (async overworld fetch);
+    // retry placement whenever a new field registers
+    const unsub = subscribeFields((id) => {
+      if (id !== worldRef.current) return
+      if (!introPlacedRef.current && id === 'overworld') {
+        if (placeAtSpawn(id, { intro: true })) {
+          introPlacedRef.current = true
+          onReady?.()
+        }
+      } else {
+        placeAtSpawn(id)
+      }
+    })
+    return unsub
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [world])
 
   useEffect(() => {
     const down = (e) => {
@@ -240,6 +302,16 @@ export default function Player({
 
     updateAvatar(rig, dt, t)
 
+    // ---- dimension travel: freeze control, keep the world alive ----
+    if (travelFx.active) {
+      const st = useWorldStore.getState()
+      const target = st.travel && st.travel.phase !== 'in' ? 1 : 0
+      p.punch += (target - p.punch) * Math.min(1, dt * 5)
+      applyFov(GAME_FOV + p.punch * 16, dt)
+      return
+    }
+    p.punch += (0 - p.punch) * Math.min(1, dt * 4)
+
     // ---- intro: Naman walks to the spawn point while the camera settles ----
     if (camMode === 'intro') {
       if (consumeSkip()) {
@@ -280,18 +352,30 @@ export default function Player({
       return
     }
 
-    // ---- menu idle: composed tripod breathing behind Naman ----
+    // ---- menu idle ----
     if (camMode === 'menu') {
-      camera.position.set(
-        p.restPos.x + Math.sin(t * 0.09) * 0.35,
-        p.restPos.y + Math.sin(t * 0.065 + 1.4) * 0.22,
-        p.restPos.z + Math.cos(t * 0.05) * 0.18,
-      )
-      camera.lookAt(
-        REST_LOOK.x + Math.sin(t * 0.04) * 0.6,
-        REST_LOOK.y,
-        REST_LOOK.z,
-      )
+      if (worldRef.current === 'overworld') {
+        // composed tripod breathing behind Naman (title screen framing)
+        camera.position.set(
+          p.restPos.x + Math.sin(t * 0.09) * 0.35,
+          p.restPos.y + Math.sin(t * 0.065 + 1.4) * 0.22,
+          p.restPos.z + Math.cos(t * 0.05) * 0.18,
+        )
+        camera.lookAt(
+          REST_LOOK.x + Math.sin(t * 0.04) * 0.6,
+          REST_LOOK.y,
+          REST_LOOK.z,
+        )
+      } else {
+        // other dimensions: gentle orbit around the character instead
+        const a = t * 0.12
+        camera.position.set(
+          A.pos.x + Math.sin(a) * (BOOM_DIST + 1.1),
+          A.pos.y + 2.4 + Math.sin(t * 0.4) * 0.15,
+          A.pos.z + Math.cos(a) * (BOOM_DIST + 1.1),
+        )
+        camera.lookAt(A.pos.x, A.pos.y + HEAD_HEIGHT - 0.2, A.pos.z)
+      }
       applyFov(MENU_FOV, dt)
       return
     }
@@ -366,22 +450,29 @@ export default function Player({
     }
     A.pos.y = p.feetY
 
+    // void safety (The End): falling off an island respawns at the spawn
+    const killY = p.field.killY ?? -80
+    if (p.feetY < killY) {
+      placeAtSpawn(worldRef.current)
+      return
+    }
+
     // character turns toward travel direction; anim follows ground speed
     A.sprinting = sprinting
     A.moveAmt += ((moving ? 1 : 0) - A.moveAmt) * Math.min(1, dt * 10)
     if (moving) A.yaw = Math.atan2(-p.move.x, -p.move.z)
 
     updateBoomCamera(dt)
-    applyFov(sprinting ? SPRINT_FOV : GAME_FOV, dt)
+    applyFov((sprinting ? SPRINT_FOV : GAME_FOV) + p.punch * 16, dt)
 
     playerEye.x = A.pos.x
     playerEye.y = A.pos.y + EYE_HEIGHT
     playerEye.z = A.pos.z
 
-    const zone = nearestZone(A.pos.x, A.pos.z)
-    if (zone !== p.nearby) {
-      p.nearby = zone
-      onNearby?.(zone)
+    const entry = nearestInteractable(A.pos.x, A.pos.z)
+    if (entry?.key !== p.nearby?.key) {
+      p.nearby = entry
+      onNearby?.(entry)
     }
   })
 

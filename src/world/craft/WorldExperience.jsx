@@ -16,10 +16,15 @@ import TouchControls from './ui/TouchControls'
 import MainMenu from './ui/MainMenu'
 import PauseMenu from './ui/PauseMenu'
 import WelcomeToast from './ui/WelcomeToast'
+import TravelOverlay from './ui/TravelOverlay'
 import { ProjectsSection, JourneySection, InventorySection, AchievementsSection, ConnectSection, HomeSection } from './ui/sections'
-import { ZONES } from './zones'
+import { AdvancementPanel, SkillPanel, ProjectPanel, ResumeSectionPanel, ResumeFullPanel } from './ui/dimPanels'
+import Portal from './dimensions/Portal'
+import VoxelSign from './dimensions/signs'
+import { WORLDS, worldMeta } from './dimensions/worlds'
+import { useWorldStore, setTravel, travelFx, getField } from './dimensions/worldStore'
 import { worldControls } from './controls'
-import { primeMusic } from './sound'
+import { primeMusic, sfx } from './sound'
 import { skipIntro } from './avatar'
 
 const SECTION_COMPONENTS = {
@@ -31,6 +36,85 @@ const SECTION_COMPONENTS = {
 }
 
 const MENU_CAM_START = INTRO_CAM_START
+
+// ------------------------------------------------------------------
+// Portal hub — the four gateways standing in the overworld. Positions
+// are snapped to the terrain at runtime so they always sit on grass.
+// ------------------------------------------------------------------
+const HUB_PORTALS = [
+  { id: 'nether', x: -13, z: -36, rotY: Math.PI / 2, title: 'THE NETHER', subtitle: 'Advancements', color: '#ff5b3a', color2: '#ffb03a' },
+  { id: 'end', x: -20, z: -66, rotY: Math.PI * 0.72, title: 'THE END', subtitle: 'Resume Archive', color: '#c78aff', color2: '#7a4fd0' },
+  { id: 'skills', x: 14, z: -78, rotY: -Math.PI * 0.72, title: 'TECH REALM', subtitle: 'Skill Stations', color: '#3ddc84', color2: '#c8ffe2' },
+  { id: 'projects', x: 16, z: -88, rotY: -Math.PI / 2, title: 'BUILD DISTRICT', subtitle: 'Project City', color: '#ffc857', color2: '#ffe9b8' },
+]
+
+// directional signposts at the path junction, pointing down the trail
+const JUNCTION_SIGNS = [
+  { x: -4.6, z: -11.6, line: '< THE NETHER', color: '#ffb03a' },
+  { x: -1.6, z: -12.1, line: '< THE END', color: '#d9b3ff' },
+  { x: 1.6, z: -12.1, line: 'TECH REALM >', color: '#7fe0ae' },
+  { x: 4.6, z: -11.6, line: 'BUILD CITY >', color: '#ffd97a' },
+]
+
+function PortalHub() {
+  const field = getField('overworld')
+  if (!field) return null
+  return (
+    <>
+      {HUB_PORTALS.map((h) => (
+        <Portal
+          key={h.id}
+          id={h.id}
+          position={[h.x, field.groundAt(h.x, h.z), h.z]}
+          rotationY={h.rotY}
+          title={h.title}
+          subtitle={h.subtitle}
+          color={h.color}
+          color2={h.color2}
+        />
+      ))}
+      {JUNCTION_SIGNS.map((s) => (
+        <VoxelSign
+          key={s.line}
+          position={[s.x, field.groundAt(s.x, s.z), s.z]}
+          lines={[s.line]}
+          colors={[s.color]}
+          width={3.4}
+          height={0.95}
+        />
+      ))}
+    </>
+  )
+}
+
+function OverworldScene() {
+  return (
+    <>
+      <SunsetSky />
+      <DayNightCycle />
+      <fogExp2 attach="fog" args={['#e8a06a', 0.0038]} />
+      <Suspense fallback={null}>
+        <WorldModel />
+        <Clouds />
+        <Particles />
+        <Clock />
+        <Ambience />
+      </Suspense>
+      <PortalHub />
+    </>
+  )
+}
+
+function DimensionScene({ world }) {
+  const def = WORLDS[world]
+  if (!def || !def.Component) return null
+  const Comp = def.Component
+  return (
+    <Suspense fallback={null}>
+      <Comp />
+    </Suspense>
+  )
+}
 
 function WorldModel() {
   const gltf = useGLTF(`${import.meta.env.BASE_URL}models/world/world.glb`)
@@ -72,7 +156,6 @@ function WorldModel() {
     glowRef.current.forEach((mesh, i) => {
       const boost = dayState.glowBoost
       if (mesh.material.name === 'mat_flame') {
-        // torch flicker: fast, noisy — brighter at night
         mesh.material.emissiveIntensity =
           (1.1 + Math.sin(t * 11 + i * 2.3) * 0.25 + Math.sin(t * 23 + i) * 0.12) * boost
       } else {
@@ -90,12 +173,16 @@ export default function WorldExperience() {
   const [ready, setReady] = useState(false)
   const [menuReady, setMenuReady] = useState(false)
   const [nearby, setNearby] = useState(null)
-  const [zonePanel, setZonePanel] = useState(null)
+  const [panel, setPanel] = useState(null) // unified interaction panel
   const [section, setSection] = useState(null)
   const [welcomed, setWelcomed] = useState(false)
-  const zonePanelRef = useRef(null)
+  const world = useWorldStore((s) => s.world)
+  const travel = useWorldStore((s) => s.travel)
+  const panelRef = useRef(null)
   // true from PLAY WORLD until the TPP dolly finishes (guards lock events)
   const flightRef = useRef(false)
+  const travelRef = useRef(false)
+  const travelTimers = useRef([])
   const isTouch = useMemo(() => window.matchMedia('(pointer: coarse)').matches, [])
 
   // subtle ambient attempt during the intro (respects stored music pref;
@@ -116,24 +203,94 @@ export default function WorldExperience() {
     }
   }, [phase])
 
-  const camMode = phase === 'intro' ? 'intro' : phase === 'menu' ? 'menu' : phase === 'entering' ? 'entering' : 'game'
+  useEffect(() => () => {
+    travelTimers.current.forEach(clearTimeout)
+  }, [])
 
-  const openZonePanel = useCallback(
-    (key) => {
-      zonePanelRef.current = key
-      setZonePanel(key)
+  const camMode =
+    phase === 'intro' ? 'intro' :
+    phase === 'menu' ? 'menu' :
+    phase === 'entering' ? 'entering' : 'game'
+
+  const openPanel = useCallback(
+    (next) => {
+      panelRef.current = next
+      setPanel(next)
       if (!isTouch && document.pointerLockElement) document.exitPointerLock()
     },
     [isTouch],
   )
 
-  const closeZonePanel = useCallback(() => {
-    zonePanelRef.current = null
-    setZonePanel(null)
-    if (!isTouch) worldControls.current?.lock()
+  const closePanel = useCallback(() => {
+    panelRef.current = null
+    setPanel(null)
+    if (!isTouch && document.pointerLockElement == null) worldControls.current?.lock()
   }, [isTouch])
 
   const closeSection = useCallback(() => setSection(null), [])
+
+  // ---- dimension travel ------------------------------------------------
+  const beginTravel = useCallback(
+    (toId, opts = {}) => {
+      const st = useWorldStore.getState()
+      if (st.travel || travelRef.current) return 'busy'
+      if (toId === st.world) return 'same'
+      const meta = worldMeta(toId)
+      sfx.portal()
+      travelRef.current = true
+      travelFx.active = true
+      setTravel({
+        to: toId,
+        title: meta.travelTitle,
+        color: meta.color,
+        color2: meta.color2,
+        phase: 'out',
+      })
+
+      const timers = travelTimers.current
+      timers.push(setTimeout(() => {
+        // swap dimensions under the cover of the collapsing disc
+        setTravel((tr) => (tr ? { ...tr, phase: 'hold' } : tr))
+        useWorldStore.getState().setWorld(toId)
+      }, 800))
+      timers.push(setTimeout(() => {
+        sfx.arrive()
+        setTravel((tr) => (tr ? { ...tr, phase: 'in' } : tr))
+      }, 1900))
+      timers.push(setTimeout(() => {
+        travelTimers.current = []
+        travelRef.current = false
+        travelFx.active = false
+        setTravel(null)
+        if (!isTouch && !document.pointerLockElement && panelRef.current == null) {
+          // ESC was pressed mid-flight — fall back to the pause menu
+          setPhase('paused')
+        }
+        opts.after?.()
+      }, 2500))
+      return 'started'
+    },
+    [isTouch],
+  )
+
+  const handleInteract = useCallback(
+    (entry) => {
+      const st = useWorldStore.getState()
+      if (st.travel || travelRef.current) return
+      if (entry?.travel) {
+        beginTravel(entry.travel)
+        return
+      }
+      const spec = entry?.panel
+      if (!spec) return
+      if (spec.type === 'zone') {
+        openPanel({ type: 'zone', key: entry.key.replace(/^zone:/, ''), label: entry.label })
+      } else {
+        openPanel({ type: spec.type, data: spec.data })
+      }
+    },
+    [beginTravel, openPanel],
+  )
 
   // Flight finished: hand control to the player.
   const startPlaying = useCallback(() => {
@@ -165,6 +322,41 @@ export default function WorldExperience() {
     }
   }, [isTouch])
 
+  // quit-to-title travels home first when stranded in another dimension
+  const goTitle = useCallback(() => {
+    setSection(null)
+    if (useWorldStore.getState().world !== 'overworld') {
+      beginTravel('overworld', { after: () => setPhase('menu') })
+    } else {
+      setPhase('menu')
+    }
+  }, [beginTravel])
+
+  const traveling = Boolean(travel)
+
+  // tiny automation hook used by the headless smoke tests
+  const phaseRef = useRef(phase)
+  phaseRef.current = phase
+  useEffect(() => {
+    window.__nc = {
+      travel: (id) => beginTravel(id),
+      state: () => ({
+        world: useWorldStore.getState().world,
+        phase: phaseRef.current,
+        travel: useWorldStore.getState().travel?.phase ?? null,
+      }),
+    }
+    return () => {
+      delete window.__nc
+    }
+  }, [beginTravel])
+
+  useEffect(() => {
+    return () => {
+      delete window.__nc
+    }
+  }, [beginTravel])
+
   return (
     <div className="fixed inset-0 bg-black">
       <Canvas
@@ -177,17 +369,7 @@ export default function WorldExperience() {
           gl.toneMappingExposure = 1.1
         }}
       >
-        <SunsetSky />
-        <DayNightCycle />
-        <fogExp2 attach="fog" args={['#e8a06a', 0.0038]} />
-
-        <Suspense fallback={null}>
-          <WorldModel />
-          <Clouds />
-          <Particles />
-          <Clock />
-          <Ambience />
-        </Suspense>
+        {world === 'overworld' ? <OverworldScene /> : <DimensionScene world={world} />}
 
         <Player
           camMode={camMode}
@@ -198,42 +380,49 @@ export default function WorldExperience() {
           onIntroDone={handleIntroDone}
           onEnterDone={startPlaying}
           onLockChange={(locked) => {
+            if (travelRef.current) return // lock churn during teleports is noise
             if (locked) {
               // during the PLAY WORLD dolly the lock event is expected; wait
               if (flightRef.current) return
-              closeZonePanel()
+              if (panelRef.current) {
+                panelRef.current = null
+                setPanel(null)
+              }
               setNearby(null)
               setPhase('playing')
             } else if (flightRef.current) {
               // user bailed mid-transition (ESC)
               flightRef.current = false
               setPhase('paused')
-            } else if (!zonePanelRef.current && !section) {
+            } else if (!panelRef.current && !section) {
               setPhase((prev) => (prev === 'playing' ? 'paused' : prev))
             }
           }}
           onNearby={setNearby}
-          onInteract={openZonePanel}
+          onInteract={handleInteract}
         />
       </Canvas>
 
       {/* cinematic black opening, fades out once the world appears */}
       {!menuReady && <div className="intro-fade" aria-hidden="true" />}
 
+      {/* dimension teleport cinematics */}
+      <TravelOverlay travel={travel} />
+
       {/* welcome toast: mounted once after the first fly-in, self-hides */}
-      {welcomed && !section && !zonePanel && <WelcomeToast show />}
+      {welcomed && !section && !panel && <WelcomeToast show />}
 
       {/* in-world HUD */}
-      {phase === 'playing' && !zonePanel && !section && (
+      {phase === 'playing' && !panel && !section && !traveling && (
         <>
           <div className="pointer-events-none absolute left-1/2 top-1/2 z-10 h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#f4f1ea]/80" />
           {nearby && (
             <div className="pointer-events-none absolute bottom-16 left-1/2 z-10 -translate-x-1/2">
               <p className="mc-slot px-5 py-3 text-sm uppercase tracking-[0.22em] text-[#f4f1ea]" style={{ boxShadow: 'inset 2px 2px 0 rgba(0,0,0,.7), inset -2px -2px 0 rgba(255,255,255,.12), 0 6px 18px rgba(0,0,0,.55)' }}>
-                <span className="font-pixel text-xs" style={{ color: ZONES[nearby].accent }}>
+                <span className="font-pixel text-xs" style={{ color: nearby.accent }}>
                   E
                 </span>
-                <span className="ml-3 text-xs">{ZONES[nearby].verb || 'View'} {ZONES[nearby].title}</span>
+                <span className="ml-3 text-xs">{nearby.verb || 'View'} {nearby.label}</span>
               </p>
             </div>
           )}
@@ -241,7 +430,7 @@ export default function WorldExperience() {
       )}
 
       {/* touch controls */}
-      {isTouch && phase === 'playing' && !zonePanel && !section && (
+      {isTouch && phase === 'playing' && !panel && !section && !traveling && (
         <>
           <button
             type="button"
@@ -252,25 +441,37 @@ export default function WorldExperience() {
             II
           </button>
           <TouchControls
-            nearby={nearby}
-            accent={nearby ? ZONES[nearby].accent : '#ffd9a0'}
-            onInteract={() => nearby && openZonePanel(nearby)}
+            nearby={Boolean(nearby)}
+            accent={nearby ? nearby.accent : '#ffd9a0'}
+            onInteract={() => nearby && handleInteract(nearby)}
           />
         </>
       )}
 
-      {/* zone interaction panels (house + clock get dedicated overlays) */}
-      {zonePanel &&
-        (zonePanel === 'home' ? (
-          <HomeSection onClose={closeZonePanel} />
-        ) : zonePanel === 'journey' ? (
-          <JourneySection onClose={closeZonePanel} />
-        ) : (
-          <ZonePanel zoneKey={zonePanel} onClose={closeZonePanel} />
-        ))}
+      {/* interaction panels (zones + dimension discoveries) */}
+      {panel &&
+        (panel.type === 'zone' ? (
+          panel.key === 'home' ? (
+            <HomeSection onClose={closePanel} />
+          ) : panel.key === 'journey' ? (
+            <JourneySection onClose={closePanel} />
+          ) : (
+            <ZonePanel zoneKey={panel.key} onClose={closePanel} />
+          )
+        ) : panel.type === 'advancement' ? (
+          <AdvancementPanel data={panel.data} onClose={closePanel} />
+        ) : panel.type === 'skill' ? (
+          <SkillPanel data={panel.data} onClose={closePanel} />
+        ) : panel.type === 'project' ? (
+          <ProjectPanel data={panel.data} onClose={closePanel} />
+        ) : panel.type === 'resumeSection' ? (
+          <ResumeSectionPanel data={panel.data} onClose={closePanel} />
+        ) : panel.type === 'resumeBook' ? (
+          <ResumeFullPanel onClose={closePanel} />
+        ) : null)}
 
       {/* menu section overlays */}
-      {section && !zonePanel && (
+      {section && !panel && (
         (() => {
           const SectionComp = SECTION_COMPONENTS[section]
           return SectionComp ? <SectionComp onClose={closeSection} /> : null
@@ -278,7 +479,7 @@ export default function WorldExperience() {
       )}
 
       {/* main menu (stays mounted through 'entering' for the fade-out) */}
-      {(phase === 'menu' || phase === 'entering') && !section && !zonePanel && (
+      {(phase === 'menu' || phase === 'entering') && !section && !panel && (
         <MainMenu
           ready={ready}
           entering={phase === 'entering'}
@@ -287,10 +488,10 @@ export default function WorldExperience() {
           touch={isTouch}
         />
       )}
-      {phase === 'paused' && !section && (
+      {phase === 'paused' && !section && !traveling && (
         <PauseMenu
           onResume={resumeWorld}
-          onMainMenu={() => setPhase('menu')}
+          onMainMenu={goTitle}
           onSection={(key) => setSection(key)}
         />
       )}

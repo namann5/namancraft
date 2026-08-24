@@ -13,7 +13,7 @@ function ensureCtx() {
   return ctx
 }
 
-function tone(freq, duration, type = 'square', gainValue = 0.035, when = 0) {
+function tone(freq, duration, type = 'square', gainValue = 0.035, when = 0, endFreq = null) {
   const ac = ensureCtx()
   if (!ac) return
   if (ac.state === 'suspended') {
@@ -23,6 +23,10 @@ function tone(freq, duration, type = 'square', gainValue = 0.035, when = 0) {
   const gain = ac.createGain()
   osc.type = type
   osc.frequency.value = freq
+  if (endFreq) {
+    osc.frequency.setValueAtTime(freq, ac.currentTime + when)
+    osc.frequency.exponentialRampToValueAtTime(endFreq, ac.currentTime + when + duration)
+  }
   const t0 = ac.currentTime + when
   gain.gain.setValueAtTime(gainValue, t0)
   gain.gain.exponentialRampToValueAtTime(0.0001, t0 + duration)
@@ -50,6 +54,20 @@ export const sfx = {
     tone(262, 0.06, 'triangle', 0.03)
     tone(392, 0.08, 'triangle', 0.03, 0.06)
     tone(523, 0.1, 'triangle', 0.03, 0.12)
+  },
+  // dimension travel: rising shimmer into the portal, soft landing chime out
+  portal() {
+    if (muted()) return
+    tone(160, 0.85, 'sawtooth', 0.028, 0, 640)
+    tone(240, 0.85, 'sine', 0.05, 0.05, 960)
+    tone(480, 0.7, 'triangle', 0.035, 0.18, 1440)
+    tone(120, 0.9, 'sine', 0.06, 0.3, 60)
+  },
+  arrive() {
+    if (muted()) return
+    tone(392, 0.12, 'triangle', 0.035)
+    tone(523.25, 0.16, 'triangle', 0.035, 0.09)
+    tone(784, 0.22, 'sine', 0.03, 0.18)
   },
 }
 

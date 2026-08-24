@@ -75,29 +75,35 @@ body {
   gap: 0.75em;
   color: #ece9e2;
   text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.65);
-  background-color: #707070;
+  background-color: #6f6f6f;
+  /* stone slab: speckle noise + top sheen + bottom shade */
   background-image:
+    radial-gradient(rgba(255, 255, 255, 0.16) 1px, transparent 1.4px),
+    radial-gradient(rgba(0, 0, 0, 0.22) 1px, transparent 1.4px),
     linear-gradient(
-      165deg,
-      rgba(255, 255, 255, 0.14),
-      rgba(255, 255, 255, 0) 42%,
-      rgba(0, 0, 0, 0.22)
-    ),
-    repeating-linear-gradient(
-      90deg,
-      rgba(0, 0, 0, 0.08) 0 2px,
-      rgba(0, 0, 0, 0) 2px 8px
+      180deg,
+      rgba(255, 255, 255, 0.18),
+      rgba(255, 255, 255, 0) 34%,
+      rgba(0, 0, 0, 0.26)
     );
+  background-size:
+    7px 7px,
+    9px 9px,
+    100% 100%;
+  background-position:
+    0 0,
+    3px 4px,
+    0 0;
   border: 3px solid #000;
   box-shadow:
-    inset 3px 3px 0 rgba(255, 255, 255, 0.32),
-    inset -3px -3px 0 rgba(0, 0, 0, 0.5),
-    0 5px 0 rgba(0, 0, 0, 0.4);
-  transition: filter 120ms ease, transform 60ms ease;
+    inset 3px 3px 0 rgba(255, 255, 255, 0.36),
+    inset -3px -4px 0 rgba(0, 0, 0, 0.52),
+    0 5px 0 rgba(0, 0, 0, 0.42);
+  transition: filter 120ms ease, transform 60ms ease, box-shadow 120ms ease;
 }
 .mc-btn:hover:not(:disabled),
 .mc-btn:focus-visible:not(:disabled) {
-  filter: brightness(1.22);
+  filter: brightness(1.24);
   transform: scale(1.025) translateY(-1px);
 }
 /* pixel sparkles that pop on hover */
@@ -154,14 +160,28 @@ body {
 }
 
 .mc-btn--primary {
-  background-color: #7a5a33;
+  background-color: #3c8527;
+  /* grass-emerald slab for the primary action */
+  background-image:
+    radial-gradient(rgba(255, 255, 255, 0.18) 1px, transparent 1.4px),
+    radial-gradient(rgba(0, 0, 0, 0.24) 1px, transparent 1.4px),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.22),
+      rgba(255, 255, 255, 0) 34%,
+      rgba(0, 0, 0, 0.3)
+    );
+  background-size:
+    7px 7px,
+    9px 9px,
+    100% 100%;
   box-shadow:
-    inset 3px 3px 0 #b08d55,
-    inset -3px -3px 0 #46311b,
+    inset 3px 3px 0 rgba(255, 255, 255, 0.42),
+    inset -3px -4px 0 #1d4a12,
     0 6px 0 rgba(0, 0, 0, 0.45);
 }
 .mc-btn--primary:hover:not(:disabled) {
-  filter: brightness(1.18);
+  filter: brightness(1.16);
 }
 
 .mc-panel {
@@ -283,6 +303,18 @@ body {
     animation-duration: 1ms !important;
     animation-delay: 0ms !important;
   }
+  .travel-disc,
+  .travel-ring,
+  .travel-inner {
+    animation: none !important;
+  }
+  .travel-overlay.out .travel-disc,
+  .travel-overlay.hold .travel-disc {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  .travel-overlay.in .travel-disc {
+    transform: translate(-50%, -50%) scale(0);
+  }
 }
 
 .page-title {
@@ -379,4 +411,196 @@ body {
     font-size: clamp(44px, 14vw, 64px);
     letter-spacing: -0.03em;
   }
+}
+
+/* ------------------------------------------------------------------ */
+/* Dimension travel cinematics                                         */
+/* ------------------------------------------------------------------ */
+
+.travel-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 45;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  --tc: #8f5bd8;
+  --tc2: #d9b3ff;
+}
+
+.travel-disc {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 260vmax;
+  height: 260vmax;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  background:
+    radial-gradient(
+      circle at 50% 42%,
+      var(--tc) 0%,
+      color-mix(in srgb, var(--tc) 62%, black) 46%,
+      #05060c 78%
+    );
+  box-shadow:
+    inset 0 0 140px rgba(0, 0, 0, 0.85),
+    0 0 180px color-mix(in srgb, var(--tc) 55%, transparent);
+}
+.travel-overlay.out .travel-disc {
+  animation: travel-swallow 800ms cubic-bezier(0.7, 0, 0.9, 0.4) forwards;
+}
+.travel-overlay.hold .travel-disc {
+  transform: translate(-50%, -50%) scale(1);
+}
+.travel-overlay.in .travel-disc {
+  animation: travel-spit 600ms cubic-bezier(0.25, 0.9, 0.3, 1) forwards;
+}
+@keyframes travel-swallow {
+  from {
+    transform: translate(-50%, -50%) scale(0);
+  }
+  to {
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+@keyframes travel-spit {
+  from {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  to {
+    transform: translate(-50%, -50%) scale(0);
+  }
+}
+
+/* rotating rune ring on the fully-closed disc */
+.travel-ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 46vmin;
+  height: 46vmin;
+  margin: -23vmin 0 0 -23vmin;
+  border-radius: 50%;
+  border: 4px dashed var(--tc2);
+  opacity: 0;
+  animation: travel-spin 5s linear infinite;
+}
+.travel-overlay.hold .travel-ring {
+  opacity: 0.75;
+}
+.travel-overlay.in .travel-ring {
+  opacity: 0;
+}
+@keyframes travel-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.travel-inner {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 30vmin;
+  height: 30vmin;
+  margin: -15vmin 0 0 -15vmin;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--tc2) 0%, transparent 68%);
+  filter: blur(6px);
+  opacity: 0;
+}
+.travel-overlay.hold .travel-inner {
+  opacity: 0.5;
+  animation: travel-pulse 900ms ease-in-out infinite alternate;
+}
+@keyframes travel-pulse {
+  from {
+    transform: scale(0.86);
+  }
+  to {
+    transform: scale(1.12);
+  }
+}
+
+.travel-title {
+  position: relative;
+  z-index: 1;
+  font-family: "Press Start 2P", ui-monospace, monospace;
+  font-size: clamp(13px, 2.4vw, 22px);
+  letter-spacing: 0.14em;
+  color: #fff;
+  text-shadow:
+    3px 3px 0 rgba(0, 0, 0, 0.85),
+    0 0 26px var(--tc);
+  text-align: center;
+  padding: 0 24px;
+  opacity: 0;
+  transform: translateY(12px);
+}
+.travel-overlay.hold .travel-title {
+  opacity: 1;
+  transform: none;
+  transition: opacity 240ms ease 120ms, transform 240ms ease 120ms;
+}
+
+.travel-bar {
+  position: absolute;
+  bottom: 18vh;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(320px, 64vw);
+  height: 16px;
+  border: 3px solid #000;
+  background: #101018;
+  box-shadow: inset 2px 2px 0 rgba(0, 0, 0, 0.8), inset -2px -2px 0 rgba(255, 255, 255, 0.14);
+  opacity: 0;
+}
+.travel-bar > i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(180deg, var(--tc2), var(--tc));
+  box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.35);
+}
+.travel-overlay.out .travel-bar,
+.travel-overlay.hold .travel-bar {
+  opacity: 1;
+}
+.travel-overlay.out .travel-bar > i {
+  animation: travel-fill 800ms linear forwards;
+}
+.travel-overlay.hold .travel-bar > i {
+  width: 100%;
+}
+.travel-overlay.in .travel-bar {
+  opacity: 0;
+}
+@keyframes travel-fill {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.travel-sub {
+  position: absolute;
+  bottom: calc(18vh - 34px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.66);
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
+  white-space: nowrap;
+  opacity: 0;
+}
+.travel-overlay.out .travel-sub,
+.travel-overlay.hold .travel-sub {
+  opacity: 1;
+}
+.travel-overlay.in .travel-sub {
+  opacity: 0;
 }

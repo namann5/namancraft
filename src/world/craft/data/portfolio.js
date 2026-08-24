@@ -78,35 +78,88 @@ export const ACHIEVEMENTS = [
     title: 'Getting Wood',
     text: 'Joined GitHub and pushed the first public repositories',
     rarity: 'common',
+    date: '2025 · Spawn',
   },
   {
     icon: 'diamond',
     title: 'Deepfake Hunter',
     text: 'Built an AI deepfake detection system end to end',
     rarity: 'rare',
+    date: 'Flagship quest',
   },
   {
     icon: 'command',
     title: 'Auto-Pilot Engineer',
     text: 'Shipped an autonomous driving systems project',
     rarity: 'rare',
+    date: 'Quest chain',
   },
   {
     icon: 'chest',
     title: 'Team Player',
     text: 'Open-source contributions merged in Rocket.Chat, MergeShip, SecuScan & UltimateHealth',
     rarity: 'rare',
+    date: 'Guild rank',
   },
   {
     icon: 'redstone',
     title: 'Dungeon Grinder',
     text: 'Solved 386+ LeetCode problems across all difficulties',
     rarity: 'common',
+    date: 'Daily grind',
   },
   {
     icon: 'emerald',
     title: 'Star Collector',
     text: 'Earned community stars across published repositories',
     rarity: 'epic',
+    date: 'Legendary drop',
   },
 ]
+
+// Tech Realm stations — one structure per technology in the Skills world.
+// Level is shown as voxel pips (1-5), never progress bars.
+export const SKILL_STATIONS = [
+  { name: 'Java', category: 'Language', level: 4, color: '#ff9d5c', built: ['AI deepfake detection services', 'Autonomous driving modules', 'Years of DSA foundations'] },
+  { name: 'JavaScript', category: 'Language', level: 5, color: '#ffd23e', built: ['MergeShip & SecuScan work', 'Rocket.Chat contributions', 'Interactive web toys'] },
+  { name: 'React', category: 'Frontend', level: 5, color: '#5decf5', built: ['NamanCraft — this whole world', 'AI Customer Service dashboard', 'Story Spark AI interface'] },
+  { name: 'Node.js', category: 'Backend', level: 4, color: '#3ddc84', built: ['AI Customer Service API layer', 'Story Spark AI services'] },
+  { name: 'Python', category: 'Language', level: 4, color: '#c78aff', built: ['AI deepfake detection system', 'Autonomous driving pipeline', 'ML experiments & tooling'] },
+  { name: 'MongoDB', category: 'Database', level: 3, color: '#7fd34e', built: ['Customer-service conversation store', 'Flexible document schemas'] },
+  { name: 'Git / GitHub', category: 'Tooling', level: 5, color: '#ffd9a0', built: ['Every repo in this portfolio', 'Open-source contribution workflow'] },
+  { name: 'Docker', category: 'DevOps', level: 3, color: '#8b5cf6', built: ['Containerized dev environments', 'Repeatable deployment setups'] },
+  { name: 'Blender', category: 'Creative', level: 3, color: '#e79b5a', built: ['The NamanCraft voxel world pipeline', 'House, clock tower & terrace geometry'] },
+  { name: 'SQL', category: 'Database', level: 3, color: '#9ecbff', built: ['Structured data coursework', 'Analytics queries & reporting'] },
+  { name: 'C / C++', category: 'Language', level: 3, color: '#b9c2cc', built: ['Autonomous driving perception modules', 'Systems programming practice'] },
+  { name: 'AI / ML', category: 'Specialty', level: 4, color: '#ffe066', built: ['Deepfake detection models', 'Story generation features', 'Computer vision experiments'] },
+]
+
+// The End — resume sections. Honest stubs where public data doesn't
+// exist yet; edit here when adding real entries.
+export const RESUME = {
+  education: [
+    { k: 'Focus', v: 'Computer Science — engineering coursework' },
+    { k: 'Base', v: 'Agra, Uttar Pradesh, India' },
+    { k: 'Note', v: 'Details landing soon — ask me directly meanwhile' },
+  ],
+  experience: [
+    { k: 'Now', v: 'Creative developer — shipping NamanCraft & AI projects' },
+    { k: '2025', v: 'Started pushing real projects publicly at github.com/namann5' },
+    { k: 'Quests', v: 'Deepfake detection · Autonomous driving · AI customer service' },
+  ],
+  oss: [
+    { k: 'Rocket.Chat', v: 'Contributions merged upstream' },
+    { k: 'MergeShip', v: 'Contributions merged upstream' },
+    { k: 'SecuScan', v: 'Security scanner improvements' },
+    { k: 'UltimateHealth', v: 'Health-platform fixes & features' },
+  ],
+  projects: [
+    { k: 'AI Deepfake Detection', v: 'Flagship — catches synthetic media end to end' },
+    { k: 'Autonomous Driving Systems', v: 'Perception, planning and control, clean architecture' },
+    { k: 'AI Customer Service', v: 'Full-stack support platform with context memory' },
+    { k: 'More', v: 'Explore the Build District for the full tour' },
+  ],
+  certifications: [
+    { k: 'Status', v: 'Vault still sealed — certifications coming soon' },
+  ],
+}
