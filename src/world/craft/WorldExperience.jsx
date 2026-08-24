@@ -334,6 +334,22 @@ export default function WorldExperience() {
 
   const traveling = Boolean(travel)
 
+  // safety net: if the game is "playing" but pointer lock silently dropped
+  // (e.g. a panel closed via ESC inside Chrome's re-lock cooldown), any
+  // plain click re-grabs it so input can't stay dead.
+  const handleCanvasClick = useCallback(() => {
+    if (
+      phase === 'playing' &&
+      !panel &&
+      !section &&
+      !traveling &&
+      !isTouch &&
+      !document.pointerLockElement
+    ) {
+      worldControls.current?.lock()
+    }
+  }, [phase, panel, section, traveling, isTouch])
+
   // tiny automation hook used by the headless smoke tests
   const phaseRef = useRef(phase)
   phaseRef.current = phase
@@ -351,14 +367,8 @@ export default function WorldExperience() {
     }
   }, [beginTravel])
 
-  useEffect(() => {
-    return () => {
-      delete window.__nc
-    }
-  }, [beginTravel])
-
   return (
-    <div className="fixed inset-0 bg-black">
+    <div className="fixed inset-0 bg-black" onClick={handleCanvasClick}>
       <Canvas
         shadows
         dpr={[1, 1.75]}

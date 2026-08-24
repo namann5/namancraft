@@ -75,6 +75,10 @@ export default function Player({
   const lockApi = useRef(null)
   const worldRef = useRef(world)
   const introPlacedRef = useRef(false)
+  // latest-prop bridge so the lock listeners can be installed ONCE
+  const liveProps = useRef({ onLockChange, camMode })
+  liveProps.current.onLockChange = onLockChange
+  liveProps.current.camMode = camMode
   const p = useRef({
     field: null,
     keys: {},
@@ -97,19 +101,26 @@ export default function Player({
     move: new THREE.Vector3(),
   }).current
 
-  // pointer lock shim + events
+  // pointer lock shim + events — installed ONCE per mount.
+  // (These handlers must NOT depend on camMode/onLockChange: those change
+  // identity every parent render, and re-running this effect would reset
+  // isLocked to false mid-game, permanently freezing mouse + WASD.)
   useEffect(() => {
     domRef.current = gl.domElement
-    lockApi.current = createLockHandle(domRef)
-    worldControls.current = lockApi.current
+    const api = createLockHandle(domRef)
+    lockApi.current = api
+    worldControls.current = api
+    // heal any drift: adopt the real current lock state at install time
+    api.isLocked = Boolean(document.pointerLockElement)
     const onLockChangeDoc = () => {
       const locked = Boolean(document.pointerLockElement)
-      if (lockApi.current) lockApi.current.isLocked = locked
-      onLockChange?.(locked)
+      api.isLocked = locked
+      liveProps.current.onLockChange?.(locked)
     }
     const onMouseMove = (e) => {
-      if (!lockApi.current?.isLocked) return
-      if (camMode !== 'entering' && camMode !== 'game') return
+      if (!api.isLocked) return
+      const m = liveProps.current.camMode
+      if (m !== 'entering' && m !== 'game') return
       p.yaw -= e.movementX * MOUSE_SENS
       p.pitch = Math.max(-0.35, Math.min(1.15, p.pitch + e.movementY * MOUSE_SENS))
     }
@@ -118,9 +129,9 @@ export default function Player({
     return () => {
       document.removeEventListener('pointerlockchange', onLockChangeDoc)
       document.removeEventListener('mousemove', onMouseMove)
-      if (worldControls.current === lockApi.current) worldControls.current = null
+      if (worldControls.current === api) worldControls.current = null
     }
-  }, [gl, camMode, onLockChange, p])
+  }, [gl, p])
 
   // entering dolly captures the title pose it starts from
   useEffect(() => {
