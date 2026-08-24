@@ -9,9 +9,3 @@ export const LANDMARKS = {
   houseLight: { x: 18.5, y: 14.5, z: -49.5 },
   clockLight: { x: -21.5, y: 13, z: -10 },
 }
-
-// Dedicated title-screen tripod pose. Framing math (hFOV ≈ 100°):
-//   clock dial bearing ≈ -33° -> left third
-//   house       bearing ≈ +27° -> right third
-//   path/pond bottom center, forest + night sky above
-export const MENU_CAM_POS = [-6, 15, 16]

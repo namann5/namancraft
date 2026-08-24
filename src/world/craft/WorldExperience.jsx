@@ -3,10 +3,9 @@ import { Canvas, useFrame } from '@react-three/fiber'
 import { useGLTF } from '@react-three/drei'
 import { ACESFilmicToneMapping, RepeatWrapping } from 'three'
 import Player from './player'
+import { INTRO_CAM_START } from './controls'
 import SunsetSky from './environment/SunsetSky'
 import DayNightCycle from './environment/DayNightCycle'
-import MenuCameraRig from './environment/MenuCameraRig'
-import { MENU_CAM_POS } from './environment/landmarks'
 import Clouds from './environment/Clouds'
 import Particles from './environment/Particles'
 import Ambience from './environment/Ambience'
@@ -19,8 +18,9 @@ import PauseMenu from './ui/PauseMenu'
 import WelcomeToast from './ui/WelcomeToast'
 import { ProjectsSection, JourneySection, InventorySection, AchievementsSection, ConnectSection, HomeSection } from './ui/sections'
 import { ZONES } from './zones'
-import { worldControls, playerEye } from './controls'
+import { worldControls } from './controls'
 import { primeMusic } from './sound'
+import { skipIntro } from './avatar'
 
 const SECTION_COMPONENTS = {
   projects: ProjectsSection,
@@ -30,7 +30,7 @@ const SECTION_COMPONENTS = {
   connect: ConnectSection,
 }
 
-const MENU_CAM_START = MENU_CAM_POS
+const MENU_CAM_START = INTRO_CAM_START
 
 function WorldModel() {
   const gltf = useGLTF(`${import.meta.env.BASE_URL}models/world/world.glb`)
@@ -85,17 +85,38 @@ function WorldModel() {
 }
 
 export default function WorldExperience() {
-  // menu -> entering -> playing <-> paused
-  const [phase, setPhase] = useState('menu')
+  // intro -> menu -> entering -> playing <-> paused
+  const [phase, setPhase] = useState('intro')
   const [ready, setReady] = useState(false)
+  const [menuReady, setMenuReady] = useState(false)
   const [nearby, setNearby] = useState(null)
   const [zonePanel, setZonePanel] = useState(null)
   const [section, setSection] = useState(null)
   const [welcomed, setWelcomed] = useState(false)
   const zonePanelRef = useRef(null)
-  // true while the cinematic fly-in owns the camera (desktop lock fires early)
+  // true from PLAY WORLD until the TPP dolly finishes (guards lock events)
   const flightRef = useRef(false)
   const isTouch = useMemo(() => window.matchMedia('(pointer: coarse)').matches, [])
+
+  // subtle ambient attempt during the intro (respects stored music pref;
+  // browsers may hold the context until the first gesture — that's fine)
+  useEffect(() => {
+    primeMusic()
+  }, [])
+
+  // any key / click skips the walking intro
+  useEffect(() => {
+    if (phase !== 'intro') return undefined
+    const skip = () => skipIntro()
+    window.addEventListener('keydown', skip)
+    window.addEventListener('pointerdown', skip)
+    return () => {
+      window.removeEventListener('keydown', skip)
+      window.removeEventListener('pointerdown', skip)
+    }
+  }, [phase])
+
+  const camMode = phase === 'intro' ? 'intro' : phase === 'menu' ? 'menu' : phase === 'entering' ? 'entering' : 'game'
 
   const openZonePanel = useCallback(
     (key) => {
@@ -114,12 +135,17 @@ export default function WorldExperience() {
 
   const closeSection = useCallback(() => setSection(null), [])
 
-  // Flight finished: hand the camera to the player.
+  // Flight finished: hand control to the player.
   const startPlaying = useCallback(() => {
     flightRef.current = false
     setNearby(null)
     setWelcomed(true)
     setPhase('playing')
+  }, [])
+
+  const handleIntroDone = useCallback(() => {
+    setPhase('menu')
+    setMenuReady(true)
   }, [])
 
   const handlePlay = useCallback(() => {
@@ -163,25 +189,23 @@ export default function WorldExperience() {
           <Ambience />
         </Suspense>
 
-        <MenuCameraRig
-          mode={phase === 'entering' ? 'entering' : phase === 'menu' ? 'menu' : 'idle'}
-          playerEye={playerEye}
-          onComplete={startPlaying}
-        />
-
         <Player
+          camMode={camMode}
+          paused={phase === 'paused'}
           touch={isTouch}
           active={phase === 'playing'}
           onReady={() => setReady(true)}
+          onIntroDone={handleIntroDone}
+          onEnterDone={startPlaying}
           onLockChange={(locked) => {
             if (locked) {
-              // during the fly-in the lock event is expected; wait for handoff
+              // during the PLAY WORLD dolly the lock event is expected; wait
               if (flightRef.current) return
               closeZonePanel()
               setNearby(null)
               setPhase('playing')
             } else if (flightRef.current) {
-              // user bailed mid-flight
+              // user bailed mid-transition (ESC)
               flightRef.current = false
               setPhase('paused')
             } else if (!zonePanelRef.current && !section) {
@@ -192,6 +216,9 @@ export default function WorldExperience() {
           onInteract={openZonePanel}
         />
       </Canvas>
+
+      {/* cinematic black opening, fades out once the world appears */}
+      {!menuReady && <div className="intro-fade" aria-hidden="true" />}
 
       {/* welcome toast: mounted once after the first fly-in, self-hides */}
       {welcomed && !section && !zonePanel && <WelcomeToast show />}
