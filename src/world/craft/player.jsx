@@ -7,8 +7,10 @@ import {
   loadOverworldField,
   travelFx,
   useWorldStore,
+  getArrival,
+  setArrival,
 } from './dimensions/worldStore'
-import { nearestInteractable } from './dimensions/interactables'
+import { nearestInteractable, findTravelEntry } from './dimensions/interactables'
 import { worldMeta } from './dimensions/worlds'
 import { worldControls, playerEye } from './controls'
 import { INTRO_CAM_START } from './controls'
@@ -61,12 +63,15 @@ export default function Player({
   paused = false,
   touch = false,
   active = false,
+  inputBlocked = false,
   onReady,
   onLockChange,
   onNearby,
   onInteract,
   onIntroDone,
   onEnterDone,
+  onAutoReturn,
+  onAutoChange,
 }) {
   const { camera, gl } = useThree()
   const world = useWorldStore((s) => s.world)
@@ -79,6 +84,9 @@ export default function Player({
   const liveProps = useRef({ onLockChange, camMode })
   liveProps.current.onLockChange = onLockChange
   liveProps.current.camMode = camMode
+  liveProps.current.inputBlocked = inputBlocked
+  // auto-walk state (driven by scroll wheel in dimensions)
+  const autoWalk = useRef({ target: null, startedAt: 0 })
   const p = useRef({
     field: null,
     keys: {},
@@ -161,13 +169,32 @@ export default function Player({
     p.field = field
     p.vy = 0
     p.grounded = true
-    A.pos.set(sp.x, field.groundAt(sp.x, sp.z), sp.z)
+
+    // If returning to overworld, spawn at the portal hub we left from
+    let spawnX = sp.x
+    let spawnZ = sp.z
+    let spawnYaw = sp.yaw
+    if (worldId === 'overworld' && !intro) {
+      const arr = getArrival()
+      if (arr) {
+        // place the player 2.4 blocks in front of the hub portal (toward the path)
+        const n = Math.sin(arr.rotY)
+        const cz = Math.cos(arr.rotY)
+        spawnX = arr.x + n * 2.4
+        spawnZ = arr.z + cz * 2.4
+        // face the portal
+        spawnYaw = Math.atan2(n, cz)
+        setArrival(null)
+      }
+    }
+
+    A.pos.set(spawnX, field.groundAt(spawnX, spawnZ), spawnZ)
     p.feetY = A.pos.y
-    A.yaw = sp.yaw
-    A.visYaw = sp.yaw
+    A.yaw = spawnYaw
+    A.visYaw = spawnYaw
     A.moveAmt = 0
     // camera yaw: 0 puts the boom behind the player looking -Z
-    p.yaw = sp.yaw
+    p.yaw = spawnYaw
     p.pitch = 0.32
 
     if (worldId === 'overworld' && intro) {
@@ -188,6 +215,8 @@ export default function Player({
       camera.lookAt(A.pos.x, A.pos.y + HEAD_HEIGHT, A.pos.z)
     } else {
       updateBoomCamera(1 / 60, true)
+      // keep menu tripod framed around wherever we actually are
+      p.restPos.copy(camera.position)
     }
     playerEye.x = A.pos.x
     playerEye.y = A.pos.y + EYE_HEIGHT
@@ -247,14 +276,39 @@ export default function Player({
     const blur = () => {
       p.keys = {}
     }
+    // scroll-to-return: wheel activates auto-walk toward the return portal
+    const acc = { y: 0 }
+    const onWheel = (e) => {
+      if (liveProps.current.inputBlocked) return
+      if (travelFx.active) return
+      if (worldRef.current === 'overworld') return
+      if (autoWalk.current.target) return
+      acc.y += Math.abs(e.deltaY)
+      if (acc.y > 200) {
+        acc.y = 0
+        const entry = findTravelEntry('overworld')
+        if (entry) {
+          autoWalk.current.target = { x: entry.x, z: entry.z }
+          autoWalk.current.startedAt = Date.now()
+          onAutoChange?.(true)
+        }
+      }
+    }
+    const resetAcc = () => { acc.y = 0 }
+
     window.addEventListener('keydown', down)
     window.addEventListener('keyup', up)
     window.addEventListener('blur', blur)
+    window.addEventListener('wheel', onWheel, { passive: true })
+    window.addEventListener('touchstart', resetAcc, { passive: true })
     return () => {
       window.removeEventListener('keydown', down)
       window.removeEventListener('keyup', up)
       window.removeEventListener('blur', blur)
+      window.removeEventListener('wheel', onWheel)
+      window.removeEventListener('touchstart', resetAcc)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [p, onInteract, camMode])
 
   const tryMoveAxis = (axis, delta) => {
@@ -366,16 +420,16 @@ export default function Player({
     // ---- menu idle ----
     if (camMode === 'menu') {
       if (worldRef.current === 'overworld') {
-        // composed tripod breathing behind Naman (title screen framing)
+        // composed tripod breathing behind Naman — look at the character
         camera.position.set(
           p.restPos.x + Math.sin(t * 0.09) * 0.35,
           p.restPos.y + Math.sin(t * 0.065 + 1.4) * 0.22,
           p.restPos.z + Math.cos(t * 0.05) * 0.18,
         )
         camera.lookAt(
-          REST_LOOK.x + Math.sin(t * 0.04) * 0.6,
-          REST_LOOK.y,
-          REST_LOOK.z,
+          A.pos.x + Math.sin(t * 0.04) * 0.6,
+          A.pos.y + HEAD_HEIGHT,
+          A.pos.z,
         )
       } else {
         // other dimensions: gentle orbit around the character instead
@@ -428,6 +482,32 @@ export default function Player({
       fwd += -touchInput.moveY
       strafe += touchInput.moveX
     }
+
+    // auto-walk: override WASD while scrolling toward return portal
+    const aw = autoWalk.current
+    let autoArrived = false
+    if (aw.target) {
+      const dx = aw.target.x - A.pos.x
+      const dz = aw.target.z - A.pos.z
+      const dist = Math.hypot(dx, dz)
+      const elapsed = Date.now() - aw.startedAt
+      const userOverride = Math.abs(fwd) > 0.05 || Math.abs(strafe) > 0.05
+      const stuck = elapsed > 8000
+      if (dist < 2.6 || stuck) {
+        autoArrived = dist < 2.6 && !stuck
+        aw.target = null
+        onAutoChange?.(false)
+      } else if (userOverride) {
+        aw.target = null
+        onAutoChange?.(false)
+      } else {
+        fwd = dx / dist
+        strafe = dz / dist
+        // yaw to face the portal
+        p.yaw = Math.atan2(-dx, -dz)
+      }
+    }
+
     fwd = Math.max(-1, Math.min(1, fwd))
     strafe = Math.max(-1, Math.min(1, strafe))
 
@@ -479,6 +559,11 @@ export default function Player({
     playerEye.x = A.pos.x
     playerEye.y = A.pos.y + EYE_HEIGHT
     playerEye.z = A.pos.z
+
+    // auto-walk arrival: reached the return portal → trigger travel
+    if (autoArrived && onAutoReturn) {
+      onAutoReturn()
+    }
 
     const entry = nearestInteractable(A.pos.x, A.pos.z)
     if (entry?.key !== p.nearby?.key) {

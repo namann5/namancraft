@@ -58,3 +58,12 @@ export function getInteractable(key) {
   }
   return dynamic.get(key) || null
 }
+
+// Return the active travel entry for a given destination in the
+// current dimension (used by the auto-walk / scroll-to-return system).
+export function findTravelEntry(dest) {
+  for (const e of dynamic.values()) {
+    if (e.travel === dest) return e
+  }
+  return null
+}

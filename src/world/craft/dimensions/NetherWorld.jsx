@@ -283,11 +283,11 @@ export default function NetherWorld() {
         id="overworld"
         position={[6, field.groundAt(6, 38) , 38]}
         rotationY={-Math.PI / 2}
-        title="OVERWORLD"
-        subtitle="Return"
-        verb="Return to Overworld"
-        color="#59a0ff"
-        color2="#cfe6ff"
+        title="Return to Overworld"
+        subtitle="Home"
+        verb="Return"
+        signLines={['RETURN TO', 'OVERWORLD']}
+        signWidth={5}
       />
 
       <Embers />

@@ -69,6 +69,13 @@ export function loadOverworldField() {
   return overworldFieldPromise
 }
 
+// ---- arrival hint (spawn at an overworld hub portal on return) ------
+// beginTravel sets this before swapping worlds; Player consumes it on
+// the next placeAtSpawn call so the avatar appears at the correct hub.
+let arrival = null
+export function getArrival() { return arrival }
+export function setArrival(next) { arrival = next }
+
 // ---- per-frame travel flag -------------------------------------------
 // Player reads this every frame; kept outside React on purpose.
 export const travelFx = {

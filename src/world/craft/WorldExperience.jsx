@@ -22,10 +22,11 @@ import { AdvancementPanel, SkillPanel, ProjectPanel, ResumeSectionPanel, ResumeF
 import Portal from './dimensions/Portal'
 import VoxelSign from './dimensions/signs'
 import { WORLDS, worldMeta } from './dimensions/worlds'
-import { useWorldStore, setTravel, travelFx, getField } from './dimensions/worldStore'
+import { useWorldStore, setTravel, travelFx, getField, setArrival } from './dimensions/worldStore'
 import { worldControls } from './controls'
 import { primeMusic, sfx } from './sound'
 import { skipIntro } from './avatar'
+import { portalBus } from './dimensions/portalBus'
 
 const SECTION_COMPONENTS = {
   projects: ProjectsSection,
@@ -42,10 +43,10 @@ const MENU_CAM_START = INTRO_CAM_START
 // are snapped to the terrain at runtime so they always sit on grass.
 // ------------------------------------------------------------------
 const HUB_PORTALS = [
-  { id: 'nether', x: -13, z: -36, rotY: Math.PI / 2, title: 'THE NETHER', subtitle: 'Advancements', color: '#ff5b3a', color2: '#ffb03a' },
-  { id: 'end', x: -20, z: -66, rotY: Math.PI * 0.72, title: 'THE END', subtitle: 'Resume Archive', color: '#c78aff', color2: '#7a4fd0' },
-  { id: 'skills', x: 14, z: -78, rotY: -Math.PI * 0.72, title: 'TECH REALM', subtitle: 'Skill Stations', color: '#3ddc84', color2: '#c8ffe2' },
-  { id: 'projects', x: 16, z: -88, rotY: -Math.PI / 2, title: 'BUILD DISTRICT', subtitle: 'Project City', color: '#ffc857', color2: '#ffe9b8' },
+  { id: 'nether', x: -13, z: -36, rotY: Math.PI / 2, title: 'ACHIEVEMENTS', subtitle: 'THE NETHER' },
+  { id: 'end', x: -20, z: -66, rotY: Math.PI * 0.72, title: 'RESUME', subtitle: 'THE END' },
+  { id: 'skills', x: 14, z: -78, rotY: -Math.PI * 0.72, title: 'SKILLS', subtitle: 'TECH REALM' },
+  { id: 'projects', x: 16, z: -88, rotY: -Math.PI / 2, title: 'PROJECTS', subtitle: 'BUILD DISTRICT' },
 ]
 
 // directional signposts at the path junction, pointing down the trail
@@ -69,8 +70,6 @@ function PortalHub() {
           rotationY={h.rotY}
           title={h.title}
           subtitle={h.subtitle}
-          color={h.color}
-          color2={h.color2}
         />
       ))}
       {JUNCTION_SIGNS.map((s) => (
@@ -184,6 +183,9 @@ export default function WorldExperience() {
   const travelRef = useRef(false)
   const travelTimers = useRef([])
   const isTouch = useMemo(() => window.matchMedia('(pointer: coarse)').matches, [])
+  // origin hub portal position for spawn-at-hub on return to overworld
+  const originRef = useRef(null)
+  const [autoWalking, setAutoWalking] = useState(false)
 
   // subtle ambient attempt during the intro (respects stored music pref;
   // browsers may hold the context until the first gesture — that's fine)
@@ -247,6 +249,10 @@ export default function WorldExperience() {
         phase: 'out',
       })
 
+      // record arrival so Player can spawn at the right overworld hub
+      const fromPortal = originRef.current
+      setArrival(toId === 'overworld' && fromPortal ? fromPortal : null)
+
       const timers = travelTimers.current
       timers.push(setTimeout(() => {
         // swap dimensions under the cover of the collapsing disc
@@ -278,6 +284,12 @@ export default function WorldExperience() {
       const st = useWorldStore.getState()
       if (st.travel || travelRef.current) return
       if (entry?.travel) {
+        // record which overworld hub we left from so we land there on return
+        if (st.world === 'overworld') {
+          originRef.current = { x: entry.x, z: entry.z, rotY: entry.rotY ?? 0 }
+        } else {
+          originRef.current = null
+        }
         beginTravel(entry.travel)
         return
       }
@@ -299,6 +311,25 @@ export default function WorldExperience() {
     setWelcomed(true)
     setPhase('playing')
   }, [])
+
+  // portal click bus — Portal.jsx fires portalBus.request(id)
+  useEffect(() => {
+    portalBus.request = (id) => {
+      const st = useWorldStore.getState()
+      if (st.travel || travelRef.current) return
+      // treat any portal click as an interaction
+      const entry = { travel: id, x: 0, z: 0 }
+      handleInteract(entry)
+    }
+    return () => { portalBus.request = null }
+  }, [handleInteract])
+
+  // auto-walk arrival: Player walks the character to the return portal
+  const handleAutoReturn = useCallback(() => {
+    const st = useWorldStore.getState()
+    if (st.travel || travelRef.current) return
+    handleInteract({ travel: 'overworld', x: 0, z: 0 })
+  }, [handleInteract])
 
   const handleIntroDone = useCallback(() => {
     setPhase('menu')
@@ -386,6 +417,7 @@ export default function WorldExperience() {
           paused={phase === 'paused'}
           touch={isTouch}
           active={phase === 'playing'}
+          inputBlocked={Boolean(panel || section)}
           onReady={() => setReady(true)}
           onIntroDone={handleIntroDone}
           onEnterDone={startPlaying}
@@ -410,6 +442,8 @@ export default function WorldExperience() {
           }}
           onNearby={setNearby}
           onInteract={handleInteract}
+          onAutoReturn={handleAutoReturn}
+          onAutoChange={setAutoWalking}
         />
       </Canvas>
 
@@ -426,12 +460,19 @@ export default function WorldExperience() {
       {phase === 'playing' && !panel && !section && !traveling && (
         <>
           <div className="pointer-events-none absolute left-1/2 top-1/2 z-10 h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#f4f1ea]/80" />
+          {autoWalking && (
+            <p className="pointer-events-none absolute bottom-24 left-1/2 z-10 -translate-x-1/2 font-pixel text-[10px] uppercase tracking-[0.3em] text-[#c084fc]/80">
+              Heading to the portal...
+            </p>
+          )}
           {nearby && (
             <div className="pointer-events-none absolute bottom-16 left-1/2 z-10 -translate-x-1/2">
               <p className="mc-slot px-5 py-3 text-sm uppercase tracking-[0.22em] text-[#f4f1ea]" style={{ boxShadow: 'inset 2px 2px 0 rgba(0,0,0,.7), inset -2px -2px 0 rgba(255,255,255,.12), 0 6px 18px rgba(0,0,0,.55)' }}>
-                <span className="font-pixel text-xs" style={{ color: nearby.accent }}>
-                  E
-                </span>
+                {nearby.travel ? (
+                  <span className="font-pixel text-xs text-[#c084fc]">[ CLICK ]</span>
+                ) : (
+                  <span className="font-pixel text-xs" style={{ color: nearby.accent }}>E</span>
+                )}
                 <span className="ml-3 text-xs">{nearby.verb || 'View'} {nearby.label}</span>
               </p>
             </div>
