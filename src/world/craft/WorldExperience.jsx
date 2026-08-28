@@ -2,6 +2,7 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'rea
 import { Canvas, useFrame } from '@react-three/fiber'
 import { useGLTF } from '@react-three/drei'
 import { ACESFilmicToneMapping, PCFSoftShadowMap, RepeatWrapping } from 'three'
+import * as THREE from 'three'
 import Player from './player'
 import { INTRO_CAM_START } from './controls'
 import SunsetSky from './environment/SunsetSky'
@@ -166,6 +167,13 @@ function WorldModel() {
       mat.roughness = 0.94
       mat.metalness = 0
       mat.envMapIntensity = 0.5
+
+      // ---- realistic voxel shading ------------------------------------
+      // Bake directional shading + deterministic value noise + contact
+      // AO into vertex colors so the baked world reads like the live
+      // dimensions (top bright, sides darker, subtle per-block variation).
+      // Kept off emissive/water above; applied to everything else.
+      applyVertexShading(obj)
     })
     return () => {
       waterRef.current = null
@@ -207,6 +215,73 @@ function WorldModel() {
   })
 
   return <primitive object={gltf.scene} />
+}
+
+// ------------------------------------------------------------------
+// Realistic voxel shading for the baked overworld.
+//
+// The live dimensions bake directional light + AO + value-noise into
+// per-vertex colors (see dimensions/voxelMesh.js). The overworld GLB has
+// textures but no vertex colors, so it tends to look uniformly flat. This
+// reproduces the same "top bright / sides darker / subtle jitter" model
+// so the whole world shares one consistent, Minecraft-with-shaders look.
+// ------------------------------------------------------------------
+function applyVertexShading(mesh) {
+  const geo = mesh.geometry
+  if (!geo || !geo.attributes.position || !geo.attributes.normal) return
+  const pos = geo.attributes.position
+  const norm = geo.attributes.normal
+
+  let color = geo.attributes.color
+  if (!color) {
+    color = new THREE.BufferAttribute(new Float32Array(pos.count * 3), 3)
+    color.needsUpdate = true
+    geo.setAttribute('color', color)
+  }
+  const col = color.array
+
+  // per-block hash so neighbouring voxels vary slightly (like real voxel AO)
+  const hash = (x, y, z) => {
+    let h = (x * 374761393 + y * 668265263 + z * 1440662683) | 0
+    h = (h ^ (h >> 13)) * 1274126177
+    return ((h ^ (h >> 16)) >>> 0) / 4294967295
+  }
+
+  for (let i = 0; i < pos.count; i += 1) {
+    const nx = pos.getX(i)
+    const ny = pos.getY(i)
+    const nz = pos.getZ(i)
+    const px = norm.getX(i)
+    const py = norm.getY(i)
+    const pz = norm.getZ(i)
+
+    // directional shade by face orientation (same ramp as voxel mesher)
+    const top = Math.max(0, py)
+    const side = Math.max(0, Math.abs(px), Math.abs(pz))
+    let shade = 0.55 + 0.45 * top + 0.22 * side
+
+    // subtle deterministic jitter per block for texture variety
+    shade *= 0.94 + 0.12 * hash(Math.floor(nx), Math.floor(ny), Math.floor(nz))
+
+    // crude contact AO: faces low to the ground get a little darker
+    const heightAo = Math.max(0, 1 - Math.min(1, Math.max(0, ny + 3) / 9)) * 0.16
+    shade *= 1 - heightAo
+
+    // top faces (grass/stone) catch a warm highlight at anchor height
+    if (py > 0.8 && ny > 0) shade *= 1.04
+
+    col[i * 3] = shade
+    col[i * 3 + 1] = shade
+    col[i * 3 + 2] = shade
+  }
+  color.needsUpdate = true
+  geo.computeBoundingSphere()
+
+  // let the material tint the textured albedo by these vertex colors
+  if (mesh.material) {
+    mesh.material.vertexColors = true
+    mesh.material.needsUpdate = true
+  }
 }
 
 export default function WorldExperience() {

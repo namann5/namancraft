@@ -36,6 +36,54 @@ const CELL = 12
 const CANVAS_W = 29 * CELL // 6 digits(3+1 gap) + 2 colons(1+1 gap) - 1
 const CANVAS_H = 9 * CELL
 
+// Original cute voxel cat (Hello-Kitty inspired, not a trademark copy):
+// a round white head with a pink bow, tiny eyes and a nose. Drawn at a
+// small cell size so it sits in the clock face's upper-right corner.
+const CAT = [
+  '..yyyyy.yyyy..',
+  '.yppyyyyyyppp.',
+  'ypppPyyyyyPppp',
+  '.yypyyyyyypyy.',
+  '....yyyyyyyy..',
+  '...yryyyyyy...',
+  '..yrrrrrrrry..',
+  '..yrrepssery..',
+  '...yryyyyyr...',
+  '....yyyyyy....',
+  '....yysyys....',
+  '....yyysyy....',
+  '...yyyyyyyy...',
+  '...yyyyyyyy...',
+  '..yy.yyyy.yy..',
+  '..yy.yyyy.yy..',
+]
+const CAT_COLORS = {
+  y: '#ffffff', // fur
+  p: '#ffb6d9', // bow / ears
+  P: '#ff9cc9', // bow shade
+  r: '#ff8bb0', // pink muzzle
+  e: '#2a2530', // eyes
+  s: '#ffcf6b', // nose / whisker dots
+  '.': null,
+}
+
+const CAT_ROW = 2 * CELL
+const CAT_CELL = 4
+const CAT_X = CANVAS_W - 19 * CAT_CELL
+const CAT_Y = CAT_ROW + 1 * CELL
+
+function paintCat(ctx) {
+  CAT.forEach((row, r) => {
+    for (let c = 0; c < row.length; c += 1) {
+      const ch = row[c]
+      const col = CAT_COLORS[ch]
+      if (!col) continue
+      ctx.fillStyle = col
+      ctx.fillRect(CAT_X + c * CAT_CELL, CAT_Y + r * CAT_CELL, CAT_CELL, CAT_CELL)
+    }
+  })
+}
+
 const TAGLINE_LINES = ['BUILDING DREAMS', 'ONE COMMIT AT A TIME']
 const TAG_CELL = 8
 // longest line drives the canvas width; each glyph advances 4 cells
@@ -48,6 +96,11 @@ function paintDigits(ctx, timeStr) {
   ctx.fillStyle = '#221a30'
   ctx.fillRect(0, 0, CANVAS_W, CELL / 2)
   ctx.fillRect(0, CANVAS_H - CELL / 2, CANVAS_W, CELL / 2)
+
+  // compress the time toward the left so a corner stays free for the cat
+  ctx.save()
+  ctx.translate(0, 0)
+  ctx.scale(0.76, 1)
 
   let x = CELL
   for (const ch of timeStr) {
@@ -67,6 +120,7 @@ function paintDigits(ctx, timeStr) {
     }
     x += (w + 1) * CELL
   }
+  ctx.restore()
 }
 
 function paintTagline(ctx) {
@@ -137,7 +191,9 @@ export default function Clock() {
       const str = `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`
       if (str !== last) {
         last = str
-        paintDigits(rig.canvas.getContext('2d'), str)
+        const ctx = rig.canvas.getContext('2d')
+        paintDigits(ctx, str)
+        paintCat(ctx)
         rig.tex.needsUpdate = true
       }
     }
