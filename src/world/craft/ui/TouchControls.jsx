@@ -99,7 +99,8 @@ export default function TouchControls({ nearby, accent, onInteract }) {
 
       <div
         ref={stickRef}
-        className="absolute bottom-8 left-6 z-20 flex h-[124px] w-[124px] touch-none items-center justify-center rounded-full border border-[#f4f1ea]/30 bg-[#0c120e]/40"
+        className="absolute left-6 z-20 flex h-[124px] w-[124px] touch-none items-center justify-center rounded-full border border-[#f4f1ea]/30 bg-[#0c120e]/40"
+        style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 32px)' }}
         onTouchStart={onStickStart}
         onTouchMove={onStickMove}
         onTouchEnd={onStickEnd}
@@ -114,7 +115,8 @@ export default function TouchControls({ nearby, accent, onInteract }) {
 
       <button
         type="button"
-        className="absolute bottom-10 right-6 z-20 h-16 w-16 touch-none rounded-full border border-[#f4f1ea]/50 bg-[#0c120e]/60 text-xs uppercase tracking-widest text-[#f4f1ea] active:bg-[#f4f1ea]/25"
+        className="absolute z-20 h-16 w-16 touch-none rounded-full border border-[#f4f1ea]/50 bg-[#0c120e]/60 text-xs uppercase tracking-widest text-[#f4f1ea] active:bg-[#f4f1ea]/25"
+        style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 40px)', right: 24 }}
         onTouchStart={(e) => {
           e.preventDefault()
           touchInput.jump = true
@@ -131,8 +133,14 @@ export default function TouchControls({ nearby, accent, onInteract }) {
         <button
           type="button"
           onClick={onInteract}
-          className="absolute bottom-32 right-6 z-20 rounded-full border px-5 py-3 text-xs uppercase tracking-[0.2em] backdrop-blur-sm"
-          style={{ color: accent, borderColor: `${accent}80`, background: '#0c120eaa' }}
+          className="absolute z-20 rounded-full border px-5 py-3 text-xs uppercase tracking-[0.2em] backdrop-blur-sm"
+          style={{
+            bottom: 'calc(env(safe-area-inset-bottom, 0px) + 132px)',
+            right: 24,
+            color: accent,
+            borderColor: `${accent}80`,
+            background: '#0c120eaa',
+          }}
         >
           Open · E
         </button>

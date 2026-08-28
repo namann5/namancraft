@@ -637,6 +637,16 @@ body {
 .nc-letterbox--travel {
   height: 14dvh;
 }
+/* on small/portrait screens keep the travel bars subtle so the HUD +
+   touch controls aren't crowded by the cinematics */
+@media (max-width: 640px) {
+  .nc-letterbox {
+    height: 3.5dvh;
+  }
+  .nc-letterbox--travel {
+    height: 8dvh;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .nc-letterbox {
     transition-duration: 1ms !important;

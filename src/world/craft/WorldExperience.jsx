@@ -670,7 +670,8 @@ export default function WorldExperience() {
           type="button"
           onClick={skipIntro}
           onMouseEnter={sfx.hover}
-          className="mc-btn font-pixel absolute right-4 top-4 z-40 px-4 py-2.5 text-xs"
+          className="mc-btn font-pixel absolute right-4 z-40 px-4 py-2.5 text-xs"
+          style={{ top: 'calc(env(safe-area-inset-top, 0px) + 16px)' }}
           aria-label="Skip intro animation"
         >
           SKIP »
@@ -723,7 +724,8 @@ export default function WorldExperience() {
           <button
             type="button"
             onClick={() => setPhase('paused')}
-            className="mc-btn font-pixel absolute right-4 top-4 z-20 px-4 py-2.5 text-xs"
+            className="mc-btn font-pixel absolute right-4 z-20 px-4 py-2.5 text-xs"
+            style={{ top: 'calc(env(safe-area-inset-top, 0px) + 16px)' }}
             aria-label="Pause"
           >
             II
