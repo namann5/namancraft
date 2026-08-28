@@ -65,30 +65,57 @@ export function ProjectsSection({ onClose }) {
   )
 }
 
+const ABOUT = {
+  intro:
+    'Creative developer building AI that spots deepfakes, software that drives cars, and interfaces people actually use.',
+  interests: ['AI & computer vision', 'Autonomous systems', 'Open source', '3D / voxel worlds'],
+  philosophy:
+    'Build things that ship. Favor clean architecture, honest tooling, and small sharp commits over demo-ware — every block in this world corresponds to something real.',
+  focus:
+    'Deepfake detection · Autonomous driving · AI customer service · and this very world (NamanCraft).',
+}
+
 export function HomeSection({ onClose }) {
   const facts = [
     { k: 'Role', v: 'Full Stack Developer' },
-    { k: 'Base', v: 'Built from scratch, block by block' },
-    { k: 'Stack', v: 'React · Node · Python · Cloud' },
+    { k: 'Base', v: 'Agra, Uttar Pradesh, India' },
+    { k: 'Stack', v: 'Java · JS/React · Node · Python' },
     { k: 'Status', v: 'Open to opportunities' },
   ]
   return (
-    <McPanel title="Naman's Home Base" subtitle="Every dev needs a spawn point" onClose={onClose}>
-      <p className="text-sm leading-relaxed text-[#c9cfc4]">
-        Welcome home. This is where Naman logs off the internet and logs into
-        side projects — a cozy base camp for building software that ships.
-      </p>
-      <ul className="mt-5 flex flex-col gap-2">
+    <McPanel title="Naman's Home" subtitle="Inside the house — about the builder" onClose={onClose} wide>
+      <p className="text-sm leading-relaxed text-[#c9cfc4]">{ABOUT.intro}</p>
+
+      <ul className="mt-5 grid gap-2 sm:grid-cols-2">
         {facts.map((f) => (
-          <li key={f.k} className="mc-slot flex items-center gap-4 px-4 py-3">
-            <span className="font-pixel w-16 shrink-0 text-[10px] text-[#ffe066]/80">{f.k}</span>
+          <li key={f.k} className="mc-slot flex items-center gap-3 px-4 py-3">
+            <span className="font-pixel shrink-0 text-[10px] text-[#ffe066]/80">{f.k}</span>
             <span className="text-sm text-[#c9cfc4]">{f.v}</span>
           </li>
         ))}
       </ul>
-      <p className="mt-5 text-center text-[10px] uppercase tracking-[0.3em] text-[#9aa39a]/70">
-        Interior decorating in progress — full About room coming soon
-      </p>
+
+      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        <section>
+          <h3 className="font-pixel text-[10px] uppercase tracking-[0.22em] text-[#ffc97e]">Interests</h3>
+          <ul className="mt-2 flex flex-col gap-1.5">
+            {ABOUT.interests.map((i) => (
+              <li key={i} className="mc-slot px-3 py-2 text-sm text-[#c9cfc4]">
+                {i}
+              </li>
+            ))}
+          </ul>
+        </section>
+        <section>
+          <h3 className="font-pixel text-[10px] uppercase tracking-[0.22em] text-[#ffc97e]">Now</h3>
+          <p className="mt-2 mc-slot px-3 py-2 text-sm leading-relaxed text-[#c9cfc4]">{ABOUT.focus}</p>
+        </section>
+      </div>
+
+      <section className="mt-5">
+        <h3 className="font-pixel text-[10px] uppercase tracking-[0.22em] text-[#ffc97e]">Development philosophy</h3>
+        <p className="mt-2 text-sm leading-relaxed text-[#9aa39a]">{ABOUT.philosophy}</p>
+      </section>
     </McPanel>
   )
 }
