@@ -157,12 +157,53 @@ function MinePanel() {
   )
 }
 
+// The warm finale — a campfire gathering where every thread of the world
+// comes back together: links to reach Naman. The closing circle of the
+// overworld journey before (or after) exploring the dimensions.
+function CampfirePanel() {
+  const rows = [
+    { label: 'Email', value: 'naman.2002.as@gmail.com', href: 'mailto:naman.2002.as@gmail.com' },
+    { label: 'GitHub', value: 'github.com/namann5', href: 'https://github.com/namann5' },
+    { label: 'LinkedIn', value: 'in/naman-singh-dev', href: 'https://www.linkedin.com/in/naman-singh-dev' },
+    { label: 'Instagram', value: '@naman5_', href: 'https://www.instagram.com/naman5_' },
+  ]
+  return (
+    <div className="flex flex-col gap-6 text-left">
+      <p className="font-display text-xl leading-[1.5] tracking-[-0.4px] text-[#f4f1ea] max-sm:text-lg">
+        You walked the whole world — the clock, the house, the portals. Settle in by the fire.
+      </p>
+      <p className="text-base font-medium leading-[1.6] tracking-[-0.4px] text-[#c9d4cb]">
+        Every block here is something real: a repo, a project, a contribution. If any of it
+        caught your eye, I'd love to talk.
+      </p>
+      <div>
+        {rows.map((r) => (
+          <StatRow key={r.label} label={r.label}>
+            <a
+              href={r.href}
+              target={r.href.startsWith('http') ? '_blank' : undefined}
+              rel="noreferrer"
+              className="transition-opacity hover:opacity-70"
+            >
+              {r.value}
+            </a>
+          </StatRow>
+        ))}
+      </div>
+      <p className="text-xs uppercase tracking-[0.25em] text-[#c9d4cb]/60">
+        Thanks for adventuring — the fire stays lit
+      </p>
+    </div>
+  )
+}
+
 const PANELS = {
   about: AboutPanel,
   stats: StatsPanel,
   skills: SkillsPanel,
   projects: ProjectsPanel,
   mine: MinePanel,
+  campfire: CampfirePanel,
 }
 
 export default function ZonePanel({ zoneKey, onClose }) {

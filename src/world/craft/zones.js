@@ -54,6 +54,14 @@ export const ZONES = {
     pos: [-19, -10],
     verb: 'View Journey',
   },
+  campfire: {
+    key: 'campfire',
+    title: 'The Campfire',
+    tagline: 'The journey ends where the fire glows',
+    accent: '#ff9d5c',
+    pos: [0.5, -12],
+    verb: 'Gather',
+  },
 }
 
 export function nearestZone(x, z) {
