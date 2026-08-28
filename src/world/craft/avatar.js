@@ -134,7 +134,36 @@ export function createAvatar() {
   rim.position.set(0.6, 2.4, 1.5)
   group.add(rim)
 
-  return { group, head, torso, armL, armR, legL, legR }
+  // soft contact shadow — a radial blob pinned just under the feet so the
+  // character reads as grounded during the night (cheap: one translucent
+  // plane that tracks the rig, no shadow-map work).
+  const blob = makeContactBlob()
+  group.add(blob)
+
+  return { group, head, torso, armL, armR, legL, legR, blob }
+}
+
+function makeContactBlob() {
+  const c = document.createElement('canvas')
+  c.width = c.height = 64
+  const ctx = c.getContext('2d')
+  const g = ctx.createRadialGradient(32, 32, 2, 32, 32, 30)
+  g.addColorStop(0, 'rgba(0,0,0,0.55)')
+  g.addColorStop(0.5, 'rgba(0,0,0,0.32)')
+  g.addColorStop(1, 'rgba(0,0,0,0)')
+  ctx.fillStyle = g
+  ctx.fillRect(0, 0, 64, 64)
+  const tex = new THREE.CanvasTexture(c)
+  tex.magFilter = THREE.NearestFilter
+  tex.minFilter = THREE.LinearFilter
+  const mesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(0.85, 0.85),
+    new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false }),
+  )
+  mesh.rotation.x = -Math.PI / 2
+  mesh.position.y = 0.012
+  mesh.renderOrder = 2
+  return mesh
 }
 
 const lerpAngle = (a, b, t) => {
