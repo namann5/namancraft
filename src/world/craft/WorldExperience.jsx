@@ -178,7 +178,9 @@ function WorldModel() {
         name === 'mat_window' ||
         name === 'mat_clockglow' ||
         name === 'mat_blossom' ||
-        name.startsWith('mat_flower_')
+        name.startsWith('mat_flower_') ||
+        name === 'mat_kalash' ||
+        name === 'mat_rangoli'
       ) {
         emisRef.current.push(obj)
         mat.toneMapped = false
@@ -230,6 +232,14 @@ function WorldModel() {
         m.emissiveIntensity = (0.35 + Math.sin(t * 1.2 + i) * 0.12) * boost * 0.5
       } else if (n.startsWith('mat_flower_')) {
         m.emissiveIntensity = (0.4 + Math.sin(t * 1.6 + i * 1.3) * 0.14) * boost * 0.6
+      } else if (n === 'mat_kalash') {
+        // gold chhatri/kalash finials — a warm steady glow, brightest at night
+        m.emissive.set('#ffcf5e')
+        m.emissiveIntensity = (0.45 + Math.sin(t * 1.5 + i * 2.2) * 0.12) * boost
+      } else if (n === 'mat_rangoli') {
+        // marigold rangoli/kolam floor glow — warms the plaza after dusk
+        m.emissive.set('#e8a92e')
+        m.emissiveIntensity = (0.3 + Math.sin(t * 0.8 + i * 1.1) * 0.1) * boost
       } else {
         // beacons keep their own accent colour
         m.emissiveIntensity = (0.8 + Math.sin(t * 2 + i * 1.7) * 0.35) * boost

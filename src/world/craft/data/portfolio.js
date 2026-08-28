@@ -157,7 +157,7 @@ export const RESUME = {
     { k: 'AI Deepfake Detection', v: 'Flagship — catches synthetic media end to end' },
     { k: 'Autonomous Driving Systems', v: 'Perception, planning and control, clean architecture' },
     { k: 'AI Customer Service', v: 'Full-stack support platform with context memory' },
-    { k: 'More', v: 'Explore the Build District for the full tour' },
+    { k: 'More', v: 'Explore the Fort Quarter for the full tour' },
   ],
   certifications: [
     { k: 'Status', v: 'Vault still sealed — certifications coming soon' },

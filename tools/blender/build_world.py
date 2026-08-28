@@ -157,12 +157,13 @@ def fill_world(heights):
 
     add_torches(grid, heights)
     add_fire_pit(grid)
-    add_house(grid, heights)
+    add_haveli(grid, heights)
     add_garden(grid)
     add_terraces(grid, heights)
     add_pond(grid, heights)
     add_path_branch(grid, heights)
     add_clock_tower(grid, heights)
+    add_gateway(grid, heights)
     plant_forest(grid, heights)
     return grid
 
@@ -206,10 +207,11 @@ ROOF_LEVELS = 6
 LANTERN_SPOTS = []
 
 
-def add_house(grid, heights):
-    """NamanCraft home base: stone base, plank walls, log posts, steep roof,
-    two glowing window bands per floor, balconies w/ lanterns, flower boxes,
-    vines. Interior stays hollow for a future 'About' interior."""
+def add_haveli(grid, heights):
+    """Indian heritage 'Haveli' (ancestral home): warm sandstone courtyard
+    mansion with arched jharokha window bands, terracotta stepped roof and a
+    small chhatri (domed pavilion) turret w/ a kalash finial. Replaces the
+    earlier wooden cabin while keeping the same footprint + glow anchors."""
     y = HOUSE_Y
 
     # stone foundation ring under the walls
@@ -218,12 +220,12 @@ def add_house(grid, heights):
             edge = x in (HX0 - 1, HX1 + 1) or z in (HZ0 - 1, HZ1 + 1)
             if edge:
                 vx.set_block(grid, x, y, z, "stone")
-    # plank floor
+    # sandstone floor
     for x in range(HX0, HX1 + 1):
         for z in range(HZ0, HZ1 + 1):
-            vx.set_block(grid, x, y, z, "plank")
+            vx.set_block(grid, x, y, z, "sandstone")
 
-    # walls: corners are logs, windows in two bands (two storeys)
+    # walls: sandstone plaster, jharokha corner posts, arched wooden windows
     for h in range(1, WALL_H + 1):
         wy = y + h
         for x in range(HX0, HX1 + 1):
@@ -233,7 +235,9 @@ def add_house(grid, heights):
                 if not (on_x_edge or on_z_edge):
                     continue
                 corner = on_x_edge and on_z_edge
-                block = "log" if corner else "plank"
+                # decorative inset band rows at storey lines
+                trim = h in (3, 6)
+                block = "jharokha" if corner else ("sandstone_dark" if trim else "sandstone")
                 if x == HX0 and not corner:
                     if z in DOOR_Z and h <= 2:
                         continue                      # front door gap
@@ -252,7 +256,7 @@ def add_house(grid, heights):
                         block = "window"
                 vx.set_block(grid, x, wy, z, block)
 
-    # sloped steep roof: stepped layers overhanging on the z sides
+    # shallow terracotta stepped roof
     ridge_y = None
     for k in range(ROOF_LEVELS):
         ry = y + WALL_H + 1 + k
@@ -260,26 +264,37 @@ def add_house(grid, heights):
         z_hi = HZ1 + 1 - k
         for x in range(HX0 - 2, HX1 + 3):
             for z in range(z_lo, z_hi + 1):
-                vx.set_block(grid, x, ry, z, "roof")
+                vx.set_block(grid, x, ry, z, "roofterra")
         ridge_y = ry
+    # parapet lips on the long sides (gabled ridge hidden under chhatri)
     for x in range(HX0 - 2, HX1 + 3):
-        vx.set_block(grid, x, ridge_y + 1, (HZ0 + HZ1) // 2, "roof")
+        vx.set_block(grid, x, ridge_y + 1, (HZ0 + HZ1) // 2, "roofterra")
 
-    # gable ends filled under the roofline
+    # gable ends filled under the roofline (sandstone)
     for gx in (HX0, HX1):
         for z in range(HZ0, HZ1 + 1):
             rise = min(z - HZ0, HZ1 - z)
             for h in range(WALL_H + 1, WALL_H + 1 + rise + 2):
                 if h <= WALL_H + ROOF_LEVELS:
-                    vx.set_block(grid, gx, y + h, z, "plank")
+                    vx.set_block(grid, gx, y + h, z, "sandstone")
 
-    # chimney through the roof
+    # chhatri turret: small domed pavilion over the old chimney spot
     cx, cz = CHIMNEY
-    for h in range(1, ROOF_LEVELS + 4):
-        vx.set_block(grid, cx, y + WALL_H + h, cz, "stone")
+    base = y + WALL_H + 2
+    for dx in (-2, -1, 0, 1, 2):
+        for dz in (-2, -1, 0, 1, 2):
+            if abs(dx) == 2 and abs(dz) == 2 and abs(dx) + abs(dz) == 4:
+                continue
+            vx.set_block(grid, cx + dx, base, cz + dz, "taj")
+    vx.set_block(grid, cx, base, cz, "taj")
+    vx.set_block(grid, cx, base + 1, cz, "taj")
+    vx.set_block(grid, cx, base + 2, cz, "taj")
+    # kalash finial on top
+    vx.set_block(grid, cx, base + 3, cz, "kalash")
+    LANTERN_SPOTS.append((cx, base + 2.5, cz))
 
     def balcony(axis, fixed, lo, hi, outward=1):
-        """Plank platform (2 deep) + log corner posts w/ lantern flames + rail."""
+        """Sandstone platform (2 deep) + jharokha posts w/ lantern flames + rail."""
         plat = y + 4
 
         def put(t, off, h, block):
@@ -288,22 +303,24 @@ def add_house(grid, heights):
             vx.set_block(grid, fx, plat + h, fz, block)
 
         for t in range(lo, hi + 1):
-            put(t, 0, 0, "plank")
-            put(t, 1, 0, "plank")
+            put(t, 0, 0, "sandstone")
+            put(t, 1, 0, "sandstone")
         for t in (lo, hi):
-            put(t, 2, 0, "log")
+            put(t, 2, 0, "jharokha")
             put(t, 2, 1, "flame")
             fx = fixed - outward * 2 if axis == 'x' else t
             fz = t if axis == 'x' else fixed - outward * 2
             LANTERN_SPOTS.append((fx, plat + 1.5, fz))
         for t in range(lo, hi + 1):
             if t not in (lo, hi):
-                put(t, 2, 1, "plank")
+                put(t, 2, 1, "sandstone")
 
     balcony('x', HX0, DOOR_Z[0] - 2, DOOR_Z[1] + 2, 1)     # west face
     balcony('z', HZ1, HX0 + 3, HX0 + 8, -1)                # south face
 
-    # flower boxes under the first-floor front windows
+    # rangoli kolam at the front step + flower boxes under the jharokha windows
+    for bz in (DOOR_Z[0] - 1, DOOR_Z[0], DOOR_Z[1], DOOR_Z[1] + 1):
+        vx.set_block(grid, HX0 - 1, y + 1, bz, "rangoli")
     for bz in (44, 45, 46, 53, 54, 55):
         vx.set_block(grid, HX0 - 1, y + 1, bz, "plank")
         vx.set_block(grid, HX0 - 1, y + 2, bz,
@@ -324,7 +341,7 @@ def add_house(grid, heights):
 
     # lantern posts flanking the front door
     for dz in (DOOR_Z[0] - 1, DOOR_Z[1] + 1):
-        vx.set_block(grid, HX0 - 1, y + 1, dz, "log")
+        vx.set_block(grid, HX0 - 1, y + 1, dz, "jharokha")
         vx.set_block(grid, HX0 - 1, y + 2, dz, "flame")
         LANTERN_SPOTS.append((HX0 - 1, y + 2.5, dz))
 
@@ -454,15 +471,36 @@ def add_clock_tower(grid, heights):
         for yy in (ty + 1, ty + 2):
             if (yy + zz) % 4 == 0:
                 vx.set_block(grid, -24, yy, zz, "vine")
-    # cap: roof layer + lip
-    box(-27, -23, ty + 12, ty + 12, 3, 17, "roof")
-    box(-26, -24, ty + 13, ty + 13, 4, 16, "roof")
-    # freestanding corner posts
+    # chhatri cap: a low terracotta cornice under a domed white pavilion
+    box(-27, -23, ty + 12, ty + 12, 3, 17, "roofterra")
+    box(-26, -24, ty + 13, ty + 13, 4, 16, "roofterra")
+    # dome (onion-ish stepped white pavilion) over the corniche
+    dome_cx, dome_cz = -25, 10
+    dome = [
+        (3, ty + 14, 6, 15),   # wide layer
+        (2, ty + 15, 8, 13),
+        (1, ty + 16, 9, 12),
+    ]
+    for w, dy, lo, hi in dome:
+        for xx in range(dome_cx - w, dome_cx + w + 1):
+            for zz in range(lo, hi + 1):
+                vx.set_block(grid, xx, ty + dy, zz, "taj")
+    vx.set_block(grid, dome_cx, ty + 17, dome_cz, "taj")
+    vx.set_block(grid, dome_cx, ty + 18, dome_cz, "kalash")
+    # fluted heritage pillars framing the wall
     for px in (-28, -22):
         for pz in (3, 17):
-            box(px, px, ty, ty + 11, pz, pz, "log")
-            vx.set_block(grid, px, ty + 12, pz, "flame")
-            LANTERN_SPOTS.append((px, ty + 12.5, pz))
+            box(px - 1, px, ty, ty + 11, pz, pz + 1, "sandstone")
+            for yy in range(ty + 1, ty + 11, 3):       # trim bands
+                vx.set_block(grid, px - 1, yy, pz, "sandstone_dark")
+                vx.set_block(grid, px, yy, pz + 1, "sandstone_dark")
+            vx.set_block(grid, px - 1, ty + 12, pz, "flame")
+            vx.set_block(grid, px, ty + 12, pz + 1, "flame")
+            LANTERN_SPOTS.append((px - 0.5, ty + 12.5, pz + 0.5))
+    # stepped ghat plinth flanking the base of the wall
+    for gz in range(2, 18):
+        for gx in (-29, -21):
+            vx.set_block(grid, gx, ty - 1, gz, "sandstone_dark")
     # flames on the cap corners
     for cx_, cz_ in [(-27, 5), (-27, 15), (-23, 5), (-23, 15)]:
         vx.set_block(grid, cx_, ty + 13, cz_, "flame")
@@ -478,6 +516,46 @@ def add_clock_tower(grid, heights):
     for yy in range(ty + 5, ty + 9):
         for zz in range(6, 15):
             vx.set_block(grid, -24, yy, zz, "clockdark")
+
+
+def add_gateway(grid, heights):
+    """Torana-style entry gateway over the path just past the plaza: a
+    sandstone lintel on two pillars with a small chhatri pavilion on top,
+    marking the entry to the Peacock Realms (walkable beneath)."""
+    z0, z1 = 11, 12
+
+    def base(x, z):
+        return max(ground_top(heights, x, z), PATH_Y)
+
+    # brace pillars on each side of the path
+    for side in (-3, 3):
+        for z in (z0, z1):
+            g0 = base(side, z)
+            for y in range(g0 + 1, g0 + 7):
+                vx.set_block(grid, side, y, z, "sandstone")
+            vx.set_block(grid, side, g0 + 7, z, "sandstone_dark")
+            vx.set_block(grid, side, g0 + 6, z, "sandstone_dark")
+
+    # lintel spanning the path
+    top_y = base(0, z0) + 8
+    for x in range(-3, 4):
+        for z in range(z0 - 1, z1 + 1):
+            vx.set_block(grid, x, top_y, z, "sandstone")
+    for x in range(-3, 4):
+        vx.set_block(grid, x, top_y - 1, z0 - 1, "sandstone_dark")
+        vx.set_block(grid, x, top_y - 1, z1 + 1, "sandstone_dark")
+
+    # small chhatri pavilion on the lintel
+    cx, cz = 0, (z0 + z1) // 2
+    for x in range(-2, 3):
+        for z in range(z0 - 2, z1 + 3):
+            vx.set_block(grid, x, top_y + 1, z, "taj")
+    for x in range(-1, 2):
+        for z in range(z0 - 1, z1 + 2):
+            vx.set_block(grid, x, top_y + 2, z, "taj")
+    vx.set_block(grid, cx, top_y + 3, cz, "taj")
+    vx.set_block(grid, cx, top_y + 4, cz, "kalash")
+    LANTERN_SPOTS.append((cx, top_y + 2.5, cz))
 
 
 def tree(grid, x, z, ground, leaf, trunk_h=None):
@@ -645,6 +723,19 @@ def main():
                                     jitter=5, emissive=1.0, seed=41))
     materials.update(register_block("clockdark", "clockdark", "#141420",
                                     jitter=6, seed=42))
+    # Loop 26: Indian heritage materials
+    materials.update(register_block("sandstone", "sandstone", "#e0bd80", jitter=14,
+                                    speckle=0.10, speckle_hex="#b98f55", seed=50))
+    materials.update(register_block("sandstone_dark", "sandstone_dark", "#b98f55",
+                                    jitter=12, speckle=0.08, speckle_hex="#8a6438", seed=51))
+    materials.update(register_block("roofterra", "roofterra", "#c2542f", jitter=16,
+                                    speckle=0.12, speckle_hex="#8f3a1c", seed=52))
+    materials.update(register_block("taj", "taj", "#f4efe2", jitter=6, seed=53))
+    materials.update(register_block("kalash", "kalash", "#ffcf5e", jitter=10,
+                                    speckle=0.10, speckle_hex="#e8a52e", emissive=0.85, seed=54))
+    materials.update(register_block("jharokha", "jharokha", "#7a3c1d", jitter=12, seed=55))
+    materials.update(register_block("rangoli", "rangoli", "#e0a92e", jitter=14,
+                                    speckle=0.16, speckle_hex="#c2361d", emissive=0.35, seed=56))
     for name in ZONES:
         materials.update(register_block(
             f"beacon_{name}", f"beacon_{name}",
