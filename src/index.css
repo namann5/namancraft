@@ -697,3 +697,28 @@ body {
     transition-duration: 1ms !important;
   }
 }
+
+/* ------------------------------------------------------------------
+   No-WebGL static fallback — keeps the portfolio readable when the 3D
+   world cannot render. Centered night-slab card with exit links.
+   ------------------------------------------------------------------ */
+.nc-fallback {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 2rem;
+  text-align: center;
+  background:
+    radial-gradient(ellipse at center, rgba(5, 8, 6, 0.4) 0%, rgba(5, 8, 6, 0.92) 100%),
+    #050806;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nc-fallback a {
+    transition: none;
+  }
+}

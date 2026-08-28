@@ -30,6 +30,7 @@ import { primeMusic, sfx } from './sound'
 import { skipIntro } from './avatar'
 import { portalBus } from './dimensions/portalBus'
 import { getQuality } from './quality'
+import { usePrefersReducedMotion } from '../../lib/usePrefersReducedMotion'
 
 const SECTION_COMPONENTS = {
   projects: ProjectsSection,
@@ -304,6 +305,42 @@ function applyVertexShading(mesh) {
   }
 }
 
+// Accessible static fallback for browsers without WebGL: the portfolio
+// stays fully readable (and links out to the classic scroll site) even
+// when the 3D world cannot render.
+function NoWebGL() {
+  return (
+    <div className="nc-fallback">
+      <h1 className="font-pixel text-xl text-[#ffe066]">NAMANCRAFT</h1>
+      <p className="font-pixel mt-2 text-[10px] uppercase tracking-[0.3em] text-[#9aa39a]">
+        Naman Singh — Full Stack Developer
+      </p>
+      <div className="mt-6 flex flex-col items-center gap-3">
+        <a href={`${import.meta.env.BASE_URL}classic`} className="mc-btn mc-btn--primary font-pixel px-5 py-3 text-xs">
+          OPEN CLASSIC SITE →
+        </a>
+        <span className="text-xs uppercase tracking-[0.25em] text-[#9aa39a]">
+          WebGL is off in this browser — the 3D block world can’t render.
+        </span>
+        <a
+          href="mailto:naman.2002.as@gmail.com"
+          className="mt-1 text-sm text-[#f4f1ea] underline-offset-4 hover:underline"
+        >
+          naman.2002.as@gmail.com
+        </a>
+        <a
+          href="https://github.com/namann5"
+          target="_blank"
+          rel="noreferrer"
+          className="text-sm text-[#c9d4cb] underline-offset-4 hover:underline"
+        >
+          github.com/namann5
+        </a>
+      </div>
+    </div>
+  )
+}
+
 export default function WorldExperience() {
   // intro -> menu -> entering -> playing <-> paused
   const [phase, setPhase] = useState('intro')
@@ -313,9 +350,26 @@ export default function WorldExperience() {
   const [panel, setPanel] = useState(null) // unified interaction panel
   const [section, setSection] = useState(null)
   const [welcomed, setWelcomed] = useState(false)
+  const [webglOk, setWebglOk] = useState(null) // null = not yet checked
   const world = useWorldStore((s) => s.world)
   const travel = useWorldStore((s) => s.travel)
   const panelRef = useRef(null)
+
+  // WebGL capability check — if 3D is unavailable, show a plain fallback
+  // so the portfolio stays readable (no WebGL, no broken black screen).
+  useEffect(() => {
+    let ok = false
+    try {
+      const c = document.createElement('canvas')
+      const gl =
+        c.getContext('webgl2') || c.getContext('webgl') || c.getContext('experimental-webgl')
+      ok = Boolean(gl)
+    } catch {
+      ok = false
+    }
+    setWebglOk(ok)
+  }, [])
+
   // true from PLAY WORLD until the TPP dolly finishes (guards lock events)
   const flightRef = useRef(false)
   const travelRef = useRef(false)
@@ -330,6 +384,18 @@ export default function WorldExperience() {
   useEffect(() => {
     primeMusic()
   }, [])
+
+  // reduced-motion users skip the walking intro outright — go straight to
+  // the menu instead of the cinematic dolly.
+  const reducedMotion = usePrefersReducedMotion()
+  useEffect(() => {
+    if (reducedMotion && phase === 'intro') {
+      skipIntro()
+      setPhase('menu')
+      setMenuReady(true)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reducedMotion])
 
   // any key / click skips the walking intro
   useEffect(() => {
@@ -538,6 +604,13 @@ export default function WorldExperience() {
     }
   }, [beginTravel])
 
+  // WebGL unavailable → readable static fallback instead of a black void.
+  // (Also shown briefly while the capability check runs, before the Canvas
+  // is allowed to mount — placed after every hook, stable order.)
+  if (webglOk !== true) {
+    return <NoWebGL />
+  }
+
   return (
     <div className="fixed inset-0 bg-black" onClick={handleCanvasClick}>
       <Canvas
@@ -590,6 +663,19 @@ export default function WorldExperience() {
 
       {/* cinematic black opening, fades out once the world appears */}
       {!menuReady && <div className="intro-fade" aria-hidden="true" />}
+
+      {/* accessible skip button during the opening cinematic */}
+      {phase === 'intro' && (
+        <button
+          type="button"
+          onClick={skipIntro}
+          onMouseEnter={sfx.hover}
+          className="mc-btn font-pixel absolute right-4 top-4 z-40 px-4 py-2.5 text-xs"
+          aria-label="Skip intro animation"
+        >
+          SKIP »
+        </button>
+      )}
 
       {/* dimension teleport cinematics */}
       <TravelOverlay travel={travel} />
