@@ -38,6 +38,19 @@ const MENU_FOV = 74
 const GAME_FOV = 71
 const SPRINT_FOV = 77
 const BOOM_DIST = 3.9
+
+// ------------------------------------------------------------------
+// Overworld cinematic journey — the composed "sights" a visitor scrolls
+// through (spec §9/§53: one intentional scroll moves ~one cinematic beat).
+// Naman auto-walks between these; the TPP camera follows and frames him
+// against each landmark. Portals still link to the other dimensions.
+// ------------------------------------------------------------------
+const OVERWORLD_JOURNEY = [
+  { name: 'spawn', label: 'Spawn', x: 2.2, z: 7.5 },
+  { name: 'clock', label: 'My Journey · The Clock', x: -20.5, z: -10 },
+  { name: 'home', label: 'Home · House', x: 27.5, z: -49.5 },
+  { name: 'hub', label: 'Portal Hub', x: 0.5, z: -13.5 },
+]
 const MOUSE_SENS = 0.0023
 
 const tmpV = new THREE.Vector3()
@@ -87,6 +100,8 @@ export default function Player({
   liveProps.current.inputBlocked = inputBlocked
   // auto-walk state (driven by scroll wheel in dimensions)
   const autoWalk = useRef({ target: null, startedAt: 0 })
+  // overworld cinematic journey index + debounce so one scroll = one beat
+  const journeyRef = useRef({ idx: 0, lastStep: 0 })
   const p = useRef({
     field: null,
     keys: {},
@@ -169,6 +184,13 @@ export default function Player({
     p.field = field
     p.vy = 0
     p.grounded = true
+
+    // reset the cinematic journey when we re-enter the overworld
+    if (worldId === 'overworld') {
+      journeyRef.current.idx = 0
+      journeyRef.current.lastStep = 0
+      autoWalk.current.target = null
+    }
 
     // If returning to overworld, spawn at the portal hub we left from
     let spawnX = sp.x
@@ -276,12 +298,32 @@ export default function Player({
     const blur = () => {
       p.keys = {}
     }
-    // scroll-to-return: wheel activates auto-walk toward the return portal
+    // scroll = cinematic journey: overworld steps between composed sights,
+    // dimensions auto-walk Naman toward the return portal.
     const acc = { y: 0 }
     const onWheel = (e) => {
       if (liveProps.current.inputBlocked) return
       if (travelFx.active) return
-      if (worldRef.current === 'overworld') return
+
+      if (worldRef.current === 'overworld') {
+        // step one cinematic beat per intentional scroll (gameplay only)
+        if (liveProps.current.camMode !== 'game') return
+        const now = Date.now()
+        if (now - journeyRef.current.lastStep < 450) return
+        const dir = e.deltaY > 0 ? 1 : -1
+        const next =
+          Math.min(OVERWORLD_JOURNEY.length - 1, Math.max(0, journeyRef.current.idx + dir))
+        // a scroll that would wrap is ignored (stay on current beat)
+        if (next === journeyRef.current.idx) return
+        journeyRef.current.idx = next
+        journeyRef.current.lastStep = now
+        const waypoint = OVERWORLD_JOURNEY[next]
+        autoWalk.current.target = { x: waypoint.x, z: waypoint.z }
+        autoWalk.current.startedAt = Date.now()
+        onAutoChange?.(true)
+        return
+      }
+
       if (autoWalk.current.target) return
       acc.y += Math.abs(e.deltaY)
       if (acc.y > 200) {

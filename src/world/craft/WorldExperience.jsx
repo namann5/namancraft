@@ -585,7 +585,7 @@ export default function WorldExperience() {
           <div className="pointer-events-none absolute left-1/2 top-1/2 z-10 h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#f4f1ea]/80" />
           {autoWalking && (
             <p className="pointer-events-none absolute bottom-24 left-1/2 z-10 -translate-x-1/2 font-pixel text-[10px] uppercase tracking-[0.3em] text-[#c084fc]/80">
-              Heading to the portal...
+              {world === 'overworld' ? 'Traveling onward...' : 'Heading to the portal...'}
             </p>
           )}
           {nearby && (
