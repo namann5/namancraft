@@ -62,14 +62,14 @@ export const ZENITH = makeRamp([
 export const HORIZON = makeRamp([
   [-1.0, '#182246'],
   [-0.25, '#2c2757'],
-  [0.0, '#e08e9c'],
+  [0.0, '#ffab6b'],
   [0.35, '#bfd9ef'],
   [1.0, '#cfe6f5'],
 ])
 export const FOG = makeRamp([
   [-1.0, '#141b38'],
   [-0.25, '#201c44'],
-  [0.0, '#bd7f8e'],
+  [0.0, '#e0935f'],
   [0.35, '#c7d8e8'],
   [1.0, '#d4e4f2'],
 ])

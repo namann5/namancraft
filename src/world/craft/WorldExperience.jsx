@@ -11,6 +11,7 @@ import Clouds from './environment/Clouds'
 import Particles from './environment/Particles'
 import Ambience from './environment/Ambience'
 import Clock from './environment/Clock'
+import DiyaLights from './environment/DiyaLights'
 import { dayState } from './environment/dayCycle'
 import ZonePanel from './ui/ZonePanel'
 import TouchControls from './ui/TouchControls'
@@ -121,6 +122,7 @@ function OverworldScene() {
         <Particles />
         <Clock />
         <Ambience />
+        <DiyaLights />
       </Suspense>
       <PortalHub />
     </>
