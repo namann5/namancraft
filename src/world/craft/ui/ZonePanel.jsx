@@ -36,7 +36,7 @@ function AboutPanel() {
         drives cars, and open-source tools people actually use.
       </p>
       <p className="text-base font-medium leading-[1.6] tracking-[-0.4px] text-[#c9d4cb]">
-        Day job: turning coffee into commits. Side quest: contributing to
+        Day job: turning chai into commits. Side quest: contributing to
         projects like MergeShip, SecuScan, and UltimateHealth.
       </p>
       <div>
@@ -134,7 +134,7 @@ function MinePanel() {
   return (
     <div className="flex flex-col gap-6 text-left">
       <p className="font-display text-xl leading-[1.5] tracking-[-0.4px] text-[#f4f1ea] max-sm:text-lg">
-        You found the deepest layer. Let's talk.
+        You found the deepest well in the village. Let's talk.
       </p>
       <div>
         <StatRow label="Email">

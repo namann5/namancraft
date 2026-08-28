@@ -66,18 +66,18 @@ function preloadWorld(id) {
 // are snapped to the terrain at runtime so they always sit on grass.
 // ------------------------------------------------------------------
 const HUB_PORTALS = [
-  { id: 'nether', x: -13, z: -36, rotY: Math.PI / 2, title: 'ACHIEVEMENTS', subtitle: 'THE NETHER' },
-  { id: 'end', x: -20, z: -66, rotY: Math.PI * 0.72, title: 'RESUME', subtitle: 'THE END' },
-  { id: 'skills', x: 14, z: -78, rotY: -Math.PI * 0.72, title: 'SKILLS', subtitle: 'TECH REALM' },
-  { id: 'projects', x: 16, z: -88, rotY: -Math.PI / 2, title: 'PROJECTS', subtitle: 'BUILD DISTRICT' },
+  { id: 'nether', x: -13, z: -36, rotY: Math.PI / 2, title: 'ACHIEVEMENTS', subtitle: 'DIWALI BAZAAR' },
+  { id: 'end', x: -20, z: -66, rotY: Math.PI * 0.72, title: 'RESUME', subtitle: 'TEMPLE OF THE PAST' },
+  { id: 'skills', x: 14, z: -78, rotY: -Math.PI * 0.72, title: 'SKILLS', subtitle: 'RANGOLI COURT' },
+  { id: 'projects', x: 16, z: -88, rotY: -Math.PI / 2, title: 'PROJECTS', subtitle: 'THE FORT QUARTER' },
 ]
 
 // directional signposts at the path junction, pointing down the trail
 const JUNCTION_SIGNS = [
-  { x: -4.6, z: -11.6, line: '< THE NETHER', color: '#ffb03a' },
-  { x: -1.6, z: -12.1, line: '< THE END', color: '#d9b3ff' },
-  { x: 1.6, z: -12.1, line: 'TECH REALM >', color: '#7fe0ae' },
-  { x: 4.6, z: -11.6, line: 'BUILD CITY >', color: '#ffd97a' },
+  { x: -4.6, z: -11.6, line: '< DIWALI BAZAAR', color: '#ffb03a' },
+  { x: -1.6, z: -12.1, line: '< TEMPLE OF THE PAST', color: '#d9b3ff' },
+  { x: 1.6, z: -12.1, line: 'RANGOLI COURT >', color: '#7fe0ae' },
+  { x: 4.6, z: -11.6, line: 'FORT QUARTER >', color: '#ffd97a' },
 ]
 
 function PortalHub() {
@@ -664,7 +664,7 @@ export default function WorldExperience() {
       {phase === 'intro' && (
         <div className="nc-intrologo" aria-hidden="true">
           <span className="nc-intrologo-title">NAMANCRAFT</span>
-          <span className="nc-intrologo-sub">Naman Singh · Full Stack Developer</span>
+          <span className="nc-intrologo-sub">The Peacock Realms · Naman Singh</span>
         </div>
       )}
 
@@ -707,7 +707,7 @@ export default function WorldExperience() {
           </div>
           {autoWalking && (
             <p className="pointer-events-none absolute bottom-24 left-1/2 z-10 -translate-x-1/2 font-pixel text-[10px] uppercase tracking-[0.3em] text-[#c084fc]/80">
-              {world === 'overworld' ? 'Traveling onward...' : 'Heading to the portal...'}
+              {world === 'overworld' ? 'Moving on through the ghats...' : 'Heading back to the gate...'}
             </p>
           )}
           {nearby && (

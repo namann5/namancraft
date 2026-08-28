@@ -299,10 +299,10 @@ export default function EndWorld() {
         id="overworld"
         position={[11, field.groundAt(11, 8), 8]}
         rotationY={-Math.PI / 2}
-        title="Return to Overworld"
+          title="Return to the Realms"
         subtitle="Home"
         verb="Return"
-        signLines={['RETURN TO', 'OVERWORLD']}
+        signLines={['RETURN TO', 'THE REALMS']}
         signWidth={5}
       />
     </>

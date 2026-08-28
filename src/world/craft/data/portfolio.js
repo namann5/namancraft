@@ -2,12 +2,12 @@
 // Edit here to update INVENTORY / MY JOURNEY / ACHIEVEMENTS / CONNECT.
 
 export const SPLASHES = [
-  'Explore. Build. Create.',
-  '100% handcrafted!',
+  'Explore. Build. Bharat.',
+  'Lit like Diwali!',
   'Also try /classic!',
-  'Powered by coffee!',
-  'Punching bugs since day one!',
+  'Powered by chai!',
   'Now with touch support!',
+  '100% handcrafted & hand-dyed!',
 ]
 
 export const LINKS = {
@@ -18,20 +18,20 @@ export const LINKS = {
   resume: '#', // TODO: link a resume PDF from /public
 }
 
-// Inventory: tech as Minecraft-style items (original voxel icons, no MC assets).
+// Inventory: tech as festival-heritage items (original voxel icons, no MC assets).
 export const INVENTORY = [
-  { name: 'Java', icon: 'sword', rarity: '#d8d8d8', note: 'Iron Sword — first language forged' },
-  { name: 'JavaScript', icon: 'redstone', rarity: '#ff5b4d', note: 'Redstone — makes everything move' },
-  { name: 'React', icon: 'diamond', rarity: '#5decf5', note: 'Diamond — UI gem' },
-  { name: 'Node.js', icon: 'emerald', rarity: '#3ddc84', note: 'Emerald — server-side currency' },
-  { name: 'Python', icon: 'book', rarity: '#c78aff', note: 'Enchanted Book — AI & ML spells' },
-  { name: 'MongoDB', icon: 'chest', rarity: '#c98d4b', note: 'Chest — stores all the loot' },
-  { name: 'Git / GitHub', icon: 'compass', rarity: '#ffd9a0', note: 'Compass — never loses track' },
-  { name: 'Docker', icon: 'obsidian', rarity: '#8b5cf6', note: 'Obsidian — container-grade tough' },
-  { name: 'Blender', icon: 'command', rarity: '#e79b5a', note: 'Command Block — voxel world builder' },
-  { name: 'SQL', icon: 'bucket', rarity: '#9ecbff', note: 'Bucket — pours structured data' },
-  { name: 'C/C++', icon: 'anvil', rarity: '#b9c2cc', note: 'Anvil — heavy systems work' },
-  { name: 'AI / ML', icon: 'star', rarity: '#ffe066', note: 'Nether Star — rare drops only' },
+  { name: 'Java', icon: 'sword', rarity: '#d8d8d8', note: 'Kataar — first language forged' },
+  { name: 'JavaScript', icon: 'redstone', rarity: '#ff5b4d', note: 'Saree thread — makes everything move' },
+  { name: 'React', icon: 'diamond', rarity: '#5decf5', note: 'Hema — the UI gem' },
+  { name: 'Node.js', icon: 'emerald', rarity: '#3ddc84', note: 'Panna — server-side gem' },
+  { name: 'Python', icon: 'book', rarity: '#c78aff', note: 'Palm-leaf book — AI & ML verses' },
+  { name: 'MongoDB', icon: 'chest', rarity: '#c98d4b', note: 'Pitara — stores all the treasure' },
+  { name: 'Git / GitHub', icon: 'compass', rarity: '#ffd9a0', note: 'Compass — never loses the trail' },
+  { name: 'Docker', icon: 'obsidian', rarity: '#8b5cf6', note: 'Black stone — container-grade tough' },
+  { name: 'Blender', icon: 'command', rarity: '#e79b5a', note: 'Chisel — sculpts this whole realm' },
+  { name: 'SQL', icon: 'bucket', rarity: '#9ecbff', note: 'Matka — pours structured water' },
+  { name: 'C/C++', icon: 'anvil', rarity: '#b9c2cc', note: "Lohar's anvil — heavy systems work" },
+  { name: 'AI / ML', icon: 'star', rarity: '#ffe066', note: 'Malaik star — rarest of the rare' },
 ]
 
 export const JOURNEY = [
@@ -43,12 +43,12 @@ export const JOURNEY = [
   {
     year: '2025',
     title: 'GitHub journey begins',
-    text: 'Started pushing real projects publicly at github.com/namann5 — every repo is a room in this world.',
+    text: 'Started pushing real projects publicly at github.com/namann5 — every repo is a room in this realm.',
   },
   {
     year: 'Quest',
     title: 'AI Deepfake Detection',
-    text: 'Built an AI system that catches synthetic media. The flagship boss fight of the portfolio.',
+    text: 'Built an AI system that catches synthetic media. The flagship of the portfolio.',
   },
   {
     year: 'Quest',
@@ -67,18 +67,18 @@ export const JOURNEY = [
   },
   {
     year: 'Grind',
-    title: 'LeetCode dungeon',
-    text: '380+ problems cleared across easy, medium and hard — the daily mining routine.',
+    title: 'LeetCode courtyard',
+    text: '380+ problems cleared across easy, medium and hard — the daily routine.',
   },
 ]
 
 export const ACHIEVEMENTS = [
   {
     icon: 'compass',
-    title: 'Getting Wood',
+    title: 'First Light',
     text: 'Joined GitHub and pushed the first public repositories',
     rarity: 'common',
-    date: '2025 · Spawn',
+    date: '2025 · The Ghat',
   },
   {
     icon: 'diamond',
@@ -103,10 +103,10 @@ export const ACHIEVEMENTS = [
   },
   {
     icon: 'redstone',
-    title: 'Dungeon Grinder',
+    title: 'Courtyard Grinder',
     text: 'Solved 386+ LeetCode problems across all difficulties',
     rarity: 'common',
-    date: 'Daily grind',
+    date: 'Daily routine',
   },
   {
     icon: 'emerald',
@@ -117,7 +117,7 @@ export const ACHIEVEMENTS = [
   },
 ]
 
-// Tech Realm stations — one structure per technology in the Skills world.
+// Rangoli Court stations — one structure per technology in the Skills world.
 // Level is shown as voxel pips (1-5), never progress bars.
 export const SKILL_STATIONS = [
   { name: 'Java', category: 'Language', level: 4, color: '#ff9d5c', built: ['AI deepfake detection services', 'Autonomous driving modules', 'Years of DSA foundations'] },
@@ -134,8 +134,8 @@ export const SKILL_STATIONS = [
   { name: 'AI / ML', category: 'Specialty', level: 4, color: '#ffe066', built: ['Deepfake detection models', 'Story generation features', 'Computer vision experiments'] },
 ]
 
-// The End — resume sections. Honest stubs where public data doesn't
-// exist yet; edit here when adding real entries.
+// Temple of the Past — resume sections. Honest stubs where public data
+// doesn't exist yet; edit here when adding real entries.
 export const RESUME = {
   education: [
     { k: 'Focus', v: 'Computer Science — engineering coursework' },

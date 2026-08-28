@@ -83,7 +83,7 @@ export function HomeSection({ onClose }) {
     { k: 'Status', v: 'Open to opportunities' },
   ]
   return (
-    <McPanel title="Naman's Home" subtitle="Inside the house — about the builder" onClose={onClose} wide>
+    <McPanel title="The Haveli" subtitle="Inside the ancestral home — about the builder" onClose={onClose} wide>
       <p className="text-sm leading-relaxed text-[#c9cfc4]">{ABOUT.intro}</p>
 
       <ul className="mt-5 grid gap-2 sm:grid-cols-2">

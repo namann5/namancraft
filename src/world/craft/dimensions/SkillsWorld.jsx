@@ -346,10 +346,10 @@ export default function SkillsWorld() {
         id="overworld"
         position={[5, field.groundAt(5, 36), 36]}
         rotationY={-Math.PI / 2}
-        title="Return to Overworld"
+          title="Return to the Realms"
         subtitle="Home"
         verb="Return"
-        signLines={['RETURN TO', 'OVERWORLD']}
+        signLines={['RETURN TO', 'THE REALMS']}
         signWidth={5}
       />
     </>

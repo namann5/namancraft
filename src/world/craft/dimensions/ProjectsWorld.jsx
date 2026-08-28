@@ -175,10 +175,10 @@ export default function ProjectsWorld() {
         id="overworld"
         position={[0, field.groundAt(0, 28), 28]}
         rotationY={Math.PI}
-        title="Return to Overworld"
+          title="Return to the Realms"
         subtitle="Home"
         verb="Return"
-        signLines={['RETURN TO', 'OVERWORLD']}
+        signLines={['RETURN TO', 'THE REALMS']}
         signWidth={5}
       />
     </>

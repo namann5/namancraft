@@ -219,7 +219,7 @@ export default function QuickView({ onClose }) {
       </Block>
 
       <p className="mt-4 text-center text-[10px] uppercase tracking-[0.25em] text-[#9aa39a]/70">
-        This is the whole portfolio in one scroll — or explore it as a world in-game.
+        This is the whole portfolio in one scroll — or explore it as a realm in-game.
       </p>
     </McPanel>
   )

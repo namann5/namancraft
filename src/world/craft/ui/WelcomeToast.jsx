@@ -24,7 +24,7 @@ export default function WelcomeToast({ show }) {
       aria-live="polite"
     >
       <p className="font-pixel text-sm text-white [text-shadow:0_3px_0_#3a3a3a,0_5px_2px_rgba(0,0,0,0.7)] sm:text-base">
-        WELCOME TO NAMANCRAFT
+        WELCOME TO THE PEACOCK REALMS
       </p>
       <div className="mt-5 flex items-center justify-center gap-4 max-sm:gap-2.5">
         {HINTS.map((h) => (
