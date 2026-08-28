@@ -19,6 +19,7 @@ import PauseMenu from './ui/PauseMenu'
 import WelcomeToast from './ui/WelcomeToast'
 import TravelOverlay from './ui/TravelOverlay'
 import { ProjectsSection, JourneySection, InventorySection, AchievementsSection, ConnectSection, HomeSection } from './ui/sections'
+import QuickView from './ui/QuickView'
 import { AdvancementPanel, SkillPanel, ProjectPanel, ResumeSectionPanel, ResumeFullPanel } from './ui/dimPanels'
 import Portal from './dimensions/Portal'
 import VoxelSign from './dimensions/signs'
@@ -36,6 +37,7 @@ const SECTION_COMPONENTS = {
   inventory: InventorySection,
   achievements: AchievementsSection,
   connect: ConnectSection,
+  quickview: QuickView,
 }
 
 const MENU_CAM_START = INTRO_CAM_START

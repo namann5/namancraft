@@ -77,6 +77,23 @@ export default function MainMenu({ ready, entering, onPlay, onSection, touch }) 
             </button>
           </div>
 
+          {/* recruiter fast-path: the whole portfolio, no world needed */}
+          <div className="rv" style={{ animationDelay: '560ms' }}>
+            <button
+              type="button"
+              disabled={!ready || entering}
+              onClick={() => {
+                sfx.open()
+                onSection('quickview')
+              }}
+              onMouseEnter={sfx.hover}
+              className="mc-btn font-pixel flex h-[46px] w-full items-center justify-center gap-2.5 border-[#ffe066]/70 text-[11px] text-[#ffe066]"
+            >
+              <VoxelIcon type="enderchest" size={16} />
+              QUICK VIEW — RECRUITER EDITION
+            </button>
+          </div>
+
           <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
             {SECTIONS.map((s, i) => (
               <div
