@@ -40,6 +40,24 @@ const SECTION_COMPONENTS = {
 
 const MENU_CAM_START = INTRO_CAM_START
 
+// Eagerly fetch a dimension's lazy chunk ahead of the world swap so the
+// destination is ready the moment the portal overlay lifts (cuts perceived
+// load pop). Overworld is a GLB rendered directly, so it's skipped here.
+function preloadWorld(id) {
+  const Comp = WORLDS[id]?.Component
+  if (!Comp || id === 'overworld') return
+  try {
+    const payload = Comp._payload
+    if (payload && typeof payload.then === 'function') {
+      payload.then(() => {})
+    } else if (Comp._init) {
+      Comp._init(Comp._payload)
+    }
+  } catch {
+    /* already loading or loaded — fine */
+  }
+}
+
 // ------------------------------------------------------------------
 // Portal hub — the four gateways standing in the overworld. Positions
 // are snapped to the terrain at runtime so they always sit on grass.
@@ -359,6 +377,8 @@ export default function WorldExperience() {
       sfx.portal()
       travelRef.current = true
       travelFx.active = true
+      // eagerly fetch the destination chunk while the portal overlay plays
+      preloadWorld(toId)
       setTravel({
         to: toId,
         title: meta.travelTitle,
@@ -582,7 +602,13 @@ export default function WorldExperience() {
       {/* in-world HUD */}
       {phase === 'playing' && !panel && !section && !traveling && (
         <>
-          <div className="pointer-events-none absolute left-1/2 top-1/2 z-10 h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#f4f1ea]/80" />
+          <div className="nc-reticle" data-active={nearby ? 'true' : 'false'} aria-hidden="true">
+            <i className="nc-reticle-corner nc-reticle-tl" />
+            <i className="nc-reticle-corner nc-reticle-tr" />
+            <i className="nc-reticle-corner nc-reticle-bl" />
+            <i className="nc-reticle-corner nc-reticle-br" />
+            <span className="nc-reticle-dot" />
+          </div>
           {autoWalking && (
             <p className="pointer-events-none absolute bottom-24 left-1/2 z-10 -translate-x-1/2 font-pixel text-[10px] uppercase tracking-[0.3em] text-[#c084fc]/80">
               {world === 'overworld' ? 'Traveling onward...' : 'Heading to the portal...'}

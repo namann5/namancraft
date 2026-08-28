@@ -642,3 +642,58 @@ body {
     transition-duration: 1ms !important;
   }
 }
+
+/* ------------------------------------------------------------------
+   Voxel interaction reticle — blocky corner frame + center dot.
+   Sits at screen center; expands and glows purple when a nearby object
+   is interactable (gate/portal/zone). Pure CSS, pointer-transparent.
+   ------------------------------------------------------------------ */
+.nc-reticle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 34px;
+  height: 34px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 10;
+  transition: transform 180ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.nc-reticle-corner {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: rgba(244, 241, 234, 0.85);
+  transition: background 180ms ease;
+}
+.nc-reticle-tl { top: 0; left: 0; }
+.nc-reticle-tr { top: 0; right: 0; }
+.nc-reticle-bl { bottom: 0; left: 0; }
+.nc-reticle-br { bottom: 0; right: 0; }
+.nc-reticle-dot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 3px;
+  height: 3px;
+  background: #f4f1ea;
+  transform: translate(-50%, -50%);
+  transition: transform 180ms ease, background 180ms ease;
+}
+.nc-reticle[data-active='true'] {
+  transform: translate(-50%, -50%) scale(1.25);
+}
+.nc-reticle[data-active='true'] .nc-reticle-corner,
+.nc-reticle[data-active='true'] .nc-reticle-dot {
+  background: #c084fc;
+}
+.nc-reticle[data-active='true'] .nc-reticle-dot {
+  transform: translate(-50%, -50%) scale(1.6);
+}
+@media (prefers-reduced-motion: reduce) {
+  .nc-reticle,
+  .nc-reticle-corner,
+  .nc-reticle-dot {
+    transition-duration: 1ms !important;
+  }
+}
