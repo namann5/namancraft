@@ -484,7 +484,7 @@ def add_clock_tower(grid, heights):
     for w, dy, lo, hi in dome:
         for xx in range(dome_cx - w, dome_cx + w + 1):
             for zz in range(lo, hi + 1):
-                vx.set_block(grid, xx, ty + dy, zz, "taj")
+                vx.set_block(grid, xx, dy, zz, "taj")
     vx.set_block(grid, dome_cx, ty + 17, dome_cz, "taj")
     vx.set_block(grid, dome_cx, ty + 18, dome_cz, "kalash")
     # fluted heritage pillars framing the wall
