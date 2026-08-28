@@ -294,6 +294,61 @@ body {
   }
 }
 
+/* branded title splash over the opening cinematic — fades in, holds,
+   then hands off to the main menu with zero interaction needed */
+.nc-intrologo {
+  position: absolute;
+  inset: 0;
+  z-index: 39;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  pointer-events: none;
+  animation: intrologo-cycle 4.4s ease forwards;
+}
+.nc-intrologo-title {
+  font-family: var(--font-pixel, monospace);
+  font-size: clamp(26px, 8vw, 64px);
+  letter-spacing: 0.04em;
+  color: #fff;
+  text-shadow: 0 4px 0 #3a3a3a, 0 6px 2px rgba(0, 0, 0, 0.65);
+}
+.nc-intrologo-sub {
+  font-family: var(--font-pixel, monospace);
+  font-size: 10px;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: #ffe066;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+@keyframes intrologo-cycle {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  14% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-8px);
+    visibility: hidden;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nc-intrologo {
+    animation: none;
+    display: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-mc-splash,
   .animate-mc-rise,

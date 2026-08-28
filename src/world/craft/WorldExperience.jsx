@@ -661,6 +661,13 @@ export default function WorldExperience() {
         />
       </Canvas>
 
+      {phase === 'intro' && (
+        <div className="nc-intrologo" aria-hidden="true">
+          <span className="nc-intrologo-title">NAMANCRAFT</span>
+          <span className="nc-intrologo-sub">Naman Singh · Full Stack Developer</span>
+        </div>
+      )}
+
       {/* cinematic black opening, fades out once the world appears */}
       {!menuReady && <div className="intro-fade" aria-hidden="true" />}
 
