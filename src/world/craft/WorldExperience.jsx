@@ -119,30 +119,57 @@ function DimensionScene({ world }) {
 function WorldModel() {
   const gltf = useGLTF(`${import.meta.env.BASE_URL}models/world/world.glb`)
   const waterRef = useRef(null)
-  const glowRef = useRef([])
+  const emisRef = useRef([])
 
   useEffect(() => {
     gltf.scene.traverse((obj) => {
       if (!obj.isMesh) return
       obj.receiveShadow = true
       const name = obj.material?.name || ''
+      const mat = obj.material
+
+      // water: translucent, slightly reflective animated surface
       if (name.includes('water')) {
         waterRef.current = obj
         obj.castShadow = false
-        obj.material.transparent = true
-        obj.material.opacity = 0.82
-        obj.material.map.wrapS = RepeatWrapping
-        obj.material.map.wrapT = RepeatWrapping
+        mat.transparent = true
+        mat.opacity = 0.82
+        if (mat.map) {
+          mat.map.wrapS = RepeatWrapping
+          mat.map.wrapT = RepeatWrapping
+        }
+        mat.roughness = 0.35
+        mat.metalness = 0.1
+        mat.envMapIntensity = 0.9
         return
       }
+
       obj.castShadow = true
-      if (name.startsWith('mat_beacon_') || name === 'mat_flame') {
-        glowRef.current.push(obj)
+
+      // emissive night surfaces: warm windows, flames, beacons, clock
+      // glow, pink blossom and flowers all "light up" after dusk.
+      if (
+        name.startsWith('mat_beacon_') ||
+        name === 'mat_flame' ||
+        name === 'mat_window' ||
+        name === 'mat_clockglow' ||
+        name === 'mat_blossom' ||
+        name.startsWith('mat_flower_')
+      ) {
+        emisRef.current.push(obj)
+        mat.toneMapped = false
+        return
       }
+
+      // opaque voxel surfaces: keep the shared texture, make them matte
+      // so they catch shader light instead of looking plasticky.
+      mat.roughness = 0.94
+      mat.metalness = 0
+      mat.envMapIntensity = 0.5
     })
     return () => {
       waterRef.current = null
-      glowRef.current = []
+      emisRef.current = []
     }
   }, [gltf.scene])
 
@@ -153,15 +180,30 @@ function WorldModel() {
       water.material.map.offset.x = Math.sin(t * 0.08) * 0.06
       water.material.map.offset.y = (water.material.map.offset.y - dt * 0.02) % 1
     }
-    glowRef.current.forEach((mesh, i) => {
-      const boost = dayState.glowBoost
-      if (mesh.material.name === 'mat_flame') {
-        mesh.material.emissiveIntensity =
-          (1.1 + Math.sin(t * 11 + i * 2.3) * 0.25 + Math.sin(t * 23 + i) * 0.12) * boost
+    const boost = dayState.glowBoost // 1 (day) .. ~2.1 (night)
+    for (let i = 0; i < emisRef.current.length; i += 1) {
+      const mesh = emisRef.current[i]
+      const n = mesh.material?.name || ''
+      const m = mesh.material
+      if (n === 'mat_flame') {
+        m.emissiveIntensity = (1.2 + Math.sin(t * 11 + i * 2.3) * 0.25 + Math.sin(t * 23 + i) * 0.12) * boost
+        m.emissive.set('#ff9a3c')
+      } else if (n === 'mat_window') {
+        m.emissiveIntensity = (0.85 + Math.sin(t * 1.4 + i * 1.9) * 0.12) * boost
+        m.emissive.set('#ffcf7a')
+      } else if (n === 'mat_clockglow') {
+        m.emissive.set('#ffe9c0')
+        m.emissiveIntensity = (0.7 + Math.sin(t * 2 + i) * 0.18) * boost
+      } else if (n === 'mat_blossom') {
+        m.emissive.set('#ff9ec0')
+        m.emissiveIntensity = (0.35 + Math.sin(t * 1.2 + i) * 0.12) * boost * 0.5
+      } else if (n.startsWith('mat_flower_')) {
+        m.emissiveIntensity = (0.4 + Math.sin(t * 1.6 + i * 1.3) * 0.14) * boost * 0.6
       } else {
-        mesh.material.emissiveIntensity = (0.75 + Math.sin(t * 2 + i * 1.7) * 0.35) * boost
+        // beacons keep their own accent colour
+        m.emissiveIntensity = (0.8 + Math.sin(t * 2 + i * 1.7) * 0.35) * boost
       }
-    })
+    }
   })
 
   return <primitive object={gltf.scene} />

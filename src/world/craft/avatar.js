@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { makeSkinTextures } from './characterTextures'
 
 // Shared avatar state written by Player (movement/intro) and read here.
 // The SAME rig is rendered in every mode, so the homepage character is
@@ -28,16 +29,15 @@ export function consumeSkip() {
   return s
 }
 
-function makeLogoTexture() {
-  // pixel "N" drawn by hand — original mark, no external assets
+// Pixel flag-texture for the front pocket accent (subtle, not the N).
+function makePocketTexture() {
   const c = document.createElement('canvas')
-  c.width = c.height = 24
+  c.width = c.height = 8
   const ctx = c.getContext('2d')
-  ctx.fillStyle = '#f4f6f8'
-  const px = (x, y, w = 3, h = 3) => ctx.fillRect(x * 3, y * 3, w * 3, h * 3)
-  for (let y = 2; y <= 13; y += 1) px(2, y)          // left stem
-  for (let y = 2; y <= 13; y += 1) px(13, y)         // right stem
-  for (let i = 0; i <= 8; i += 1) px(5 + i, 12 - i)  // diagonal
+  ctx.fillStyle = '#262a31'
+  ctx.fillRect(0, 0, 8, 8)
+  ctx.fillStyle = '#31363f'
+  ctx.fillRect(0, 6, 8, 2)
   const tex = new THREE.CanvasTexture(c)
   tex.magFilter = THREE.NearestFilter
   tex.minFilter = THREE.NearestFilter
@@ -45,28 +45,43 @@ function makeLogoTexture() {
   return tex
 }
 
-const MAT = {
-  skin: () => new THREE.MeshLambertMaterial({ color: '#d9a077' }),
-  hair: () => new THREE.MeshLambertMaterial({ color: '#171310' }),
-  hoodie: () => new THREE.MeshLambertMaterial({ color: '#23262c' }),
-  hoodieDark: () => new THREE.MeshLambertMaterial({ color: '#1a1d22' }),
-  pants: () => new THREE.MeshLambertMaterial({ color: '#1b1e24' }),
-  shoe: () => new THREE.MeshLambertMaterial({ color: '#e9ecf2' }),
-  sole: () => new THREE.MeshLambertMaterial({ color: '#2a2d33' }),
-  eye: () => new THREE.MeshLambertMaterial({ color: '#221e1a' }),
+let TEX = null
+function textures() {
+  if (!TEX) TEX = makeSkinTextures()
+  return TEX
 }
 
-function box(w, h, d, mat, x = 0, y = 0, z = 0) {
-  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat)
+// Physical-ish materials that pick up the world lighting (Minecraft
+// "skins are just textures" look) instead of flat Lambert colours. The
+// white "N" is stitched onto the torso's back face via face materials.
+function mat(map) {
+  return new THREE.MeshStandardMaterial({ map, roughness: 0.92, metalness: 0, envMapIntensity: 0.4 })
+}
+
+let torsoMats = null
+function torsoFaceMats() {
+  if (!torsoMats) {
+    const m = textures()
+    // BoxGeometry face order: +x,-x,+y,-y,+z,-z  (back = +z = index 4)
+    torsoMats = [mat(m.hoodie), mat(m.hoodie), mat(m.hoodie), mat(m.hoodie), mat(m.back), mat(m.hoodie)]
+  }
+  return torsoMats
+}
+
+function box(w, h, d, mats, x = 0, y = 0, z = 0) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mats)
   m.position.set(x, y, z)
   m.castShadow = true
+  m.receiveShadow = true
   return m
 }
 
-// Builds the voxel rig: charcoal hoodie w/ white "N" on the back, dark
-// pants, sneakers, custom hair, natural skin tone. Pivots are grouped so
-// limbs swing from shoulders/hips like a proper little game character.
+// Builds the voxel rig — a custom Minecraft-style player skin rendered
+// with the world's shader lighting: textured hoodie w/ white "N" on the
+// back, dark denim pants, sneakers, layered voxel hair, natural skin.
+// Pivots are grouped so limbs swing from shoulders/hips.
 export function createAvatar() {
+  const m = textures()
   const group = new THREE.Group()
 
   const legL = new THREE.Group()
@@ -74,21 +89,16 @@ export function createAvatar() {
   legL.position.set(-0.135, 0.82, 0)
   legR.position.set(0.135, 0.82, 0)
   for (const leg of [legL, legR]) {
-    leg.add(box(0.23, 0.60, 0.25, MAT.pants(), 0, -0.31, 0))
-    leg.add(box(0.25, 0.15, 0.36, MAT.shoe(), 0, -0.685, -0.045))
-    leg.add(box(0.26, 0.06, 0.37, MAT.sole(), 0, -0.79, -0.045))
+    leg.add(box(0.23, 0.60, 0.25, mat(m.jeans), 0, -0.31, 0))
+    leg.add(box(0.25, 0.15, 0.36, mat(m.shoe), 0, -0.685, -0.045))
+    leg.add(box(0.26, 0.06, 0.37, mat(m.sole), 0, -0.79, -0.045))
     group.add(leg)
   }
 
-  const torso = box(0.54, 0.68, 0.30, MAT.hoodie(), 0, 1.16, 0)
-  torso.add(box(0.40, 0.13, 0.12, MAT.hoodieDark(), 0, 0.29, 0.17))   // hood roll
-  torso.add(box(0.30, 0.10, 0.02, MAT.hoodieDark(), 0, -0.18, -0.165)) // pocket
-  const logo = new THREE.Mesh(
-    new THREE.PlaneGeometry(0.30, 0.30),
-    new THREE.MeshBasicMaterial({ map: makeLogoTexture(), transparent: true }),
-  )
-  logo.position.set(0, 0.03, 0.153)
-  torso.add(logo)
+  // torso: hoodie everywhere, white N on the back face (+Z)
+  const torso = box(0.54, 0.68, 0.30, torsoFaceMats(), 0, 1.16, 0)
+  torso.add(box(0.40, 0.13, 0.12, mat(m.hoodie), 0, 0.29, 0.17))        // hood roll
+  torso.add(box(0.34, 0.12, 0.02, mat(makePocketTexture()), 0, -0.16, -0.166)) // front pocket
   group.add(torso)
 
   const armL = new THREE.Group()
@@ -96,23 +106,27 @@ export function createAvatar() {
   armL.position.set(-0.385, 1.42, 0)
   armR.position.set(0.385, 1.42, 0)
   for (const arm of [armL, armR]) {
-    arm.add(box(0.20, 0.44, 0.24, MAT.hoodie(), 0, -0.20, 0))
-    arm.add(box(0.185, 0.22, 0.215, MAT.skin(), 0, -0.51, 0))
+    arm.add(box(0.20, 0.44, 0.24, mat(m.hoodie), 0, -0.20, 0))
+    arm.add(box(0.185, 0.22, 0.215, mat(m.skin), 0, -0.51, 0))
     group.add(arm)
   }
 
   const head = new THREE.Group()
   head.position.set(0, 1.50, 0)
-  head.add(box(0.16, 0.10, 0.16, MAT.skin(), 0, 0.03, 0)) // neck
-  head.add(box(0.46, 0.44, 0.44, MAT.skin(), 0, 0.26, 0))
-  head.add(box(0.07, 0.07, 0.02, MAT.eye(), -0.10, 0.28, -0.222))
-  head.add(box(0.07, 0.07, 0.02, MAT.eye(), 0.10, 0.28, -0.222))
-  // custom haircut: cap, back panel, side tufts, fringe
-  head.add(box(0.50, 0.14, 0.48, MAT.hair(), 0, 0.505, 0))
-  head.add(box(0.50, 0.32, 0.10, MAT.hair(), 0, 0.32, 0.205))
-  head.add(box(0.04, 0.22, 0.30, MAT.hair(), -0.245, 0.34, 0.03))
-  head.add(box(0.04, 0.22, 0.30, MAT.hair(), 0.245, 0.34, 0.03))
-  head.add(box(0.46, 0.09, 0.07, MAT.hair(), 0, 0.44, -0.215))
+  head.add(box(0.16, 0.10, 0.16, mat(m.skin), 0, 0.03, 0)) // neck
+  head.add(box(0.46, 0.44, 0.44, mat(m.skin), 0, 0.26, 0))
+  // eyes: two small dark pixel tiles on the front face
+  const eyeL = box(0.07, 0.07, 0.02, mat(m.eye), -0.10, 0.28, -0.222)
+  const eyeR = box(0.07, 0.07, 0.02, mat(m.eye), 0.10, 0.28, -0.222)
+  head.add(eyeL, eyeR)
+
+  // layered voxel hair — cap, back panel, side tufts, fringe, crown bump
+  head.add(box(0.50, 0.14, 0.48, mat(m.hair), 0, 0.505, 0))
+  head.add(box(0.50, 0.34, 0.12, mat(m.hair), 0, 0.33, 0.205))   // back panel
+  head.add(box(0.06, 0.26, 0.32, mat(m.hair), -0.245, 0.36, 0.04)) // left tuft
+  head.add(box(0.06, 0.26, 0.32, mat(m.hair), 0.245, 0.36, 0.04))  // right tuft
+  head.add(box(0.46, 0.10, 0.08, mat(m.hair), 0, 0.47, -0.21))     // fringe
+  head.add(box(0.40, 0.10, 0.40, mat(m.hair), 0, 0.62, 0))         // crown bump
   group.add(head)
 
   // warm rim light so Naman reads clearly against the night world
