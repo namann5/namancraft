@@ -3,6 +3,7 @@ import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { TerrainGrid, fbm, mulberry32, netherPalette } from './terrainKit'
 import { buildVoxelGeometry } from './voxelMesh'
+import VoxelRenderer from './VoxelRenderer'
 import { setField } from './worldStore'
 import Portal from './Portal'
 import VoxelSign from './signs'
@@ -262,12 +263,7 @@ export default function NetherWorld() {
       <pointLight position={[0, 34, -30]} color="#ff7b1f" intensity={55} distance={30} decay={2} />
       <pointLight position={[-20, 12, 8]} color="#ff5a26" intensity={16} distance={18} decay={2} />
 
-      <mesh geometry={geo.solid} receiveShadow>
-        <meshLambertMaterial vertexColors />
-      </mesh>
-      <mesh geometry={geo.glow}>
-        <meshBasicMaterial vertexColors toneMapped={false} />
-      </mesh>
+      <VoxelRenderer geo={geo} />
 
       {/* advancement tree */}
       {ACHIEVEMENTS.map((a, i) => (
@@ -294,3 +290,4 @@ export default function NetherWorld() {
     </>
   )
 }
+

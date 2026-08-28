@@ -3,6 +3,7 @@ import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { TerrainGrid, techPalette } from './terrainKit'
 import { buildVoxelGeometry } from './voxelMesh'
+import VoxelRenderer from './VoxelRenderer'
 import { setField } from './worldStore'
 import Portal from './Portal'
 import VoxelSign from './signs'
@@ -325,12 +326,7 @@ export default function SkillsWorld() {
       <hemisphereLight args={['#eafcff', '#7fa08f', 0.95]} />
       <directionalLight position={[40, 60, 20]} color="#fff4de" intensity={1.15} castShadow shadow-mapSize-width={1024} shadow-mapSize-height={1024} />
 
-      <mesh geometry={geo.solid} receiveShadow>
-        <meshLambertMaterial vertexColors />
-      </mesh>
-      <mesh geometry={geo.glow}>
-        <meshBasicMaterial vertexColors toneMapped={false} />
-      </mesh>
+      <VoxelRenderer geo={geo} />
 
       {/* animated emblems above their stations */}
       <ReactAtom position={[stationPos(2).x, GY + 4.4, stationPos(2).z]} />
@@ -386,3 +382,4 @@ function SkillStation({ skill, index, pos, gy }) {
     />
   )
 }
+

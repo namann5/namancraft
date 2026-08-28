@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
+import { getQuality } from '../quality'
 import {
   stepDay,
   sampleRamp,
@@ -42,6 +43,7 @@ const CLOUD_TINT = makeRamp([
 export default function DayNightCycle() {
   const dirRef = useRef(null)
   const hemiRef = useRef(null)
+  const q = getQuality()
 
   useFrame(({ scene }, dt) => {
     const { sy, sx } = stepDay(Math.min(dt, 0.1))
@@ -95,7 +97,7 @@ export default function DayNightCycle() {
     const fog = scene.fog
     if (fog?.isFogExp2) {
       fog.color.copy(setTmp(FOG, e))
-      fog.density = 0.0038 * (1 + (1 - daylight) * 0.15)
+      fog.density = fog.baseDensity * (1 + (1 - daylight) * 0.15)
     }
 
     // clouds: white at noon, peach at dusk, slate at night
@@ -133,8 +135,6 @@ export default function DayNightCycle() {
         intensity={2.4}
         position={[70, 45, -40]}
         castShadow
-        shadow-mapSize-width={2048}
-        shadow-mapSize-height={2048}
         shadow-camera-left={-110}
         shadow-camera-right={110}
         shadow-camera-top={110}
@@ -142,6 +142,8 @@ export default function DayNightCycle() {
         shadow-camera-near={10}
         shadow-camera-far={300}
         shadow-bias={-0.0004}
+        shadow-mapSize-width={q.shadows}
+        shadow-mapSize-height={q.shadows}
       />
     </>
   )

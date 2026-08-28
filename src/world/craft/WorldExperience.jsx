@@ -1,7 +1,7 @@
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { useGLTF } from '@react-three/drei'
-import { ACESFilmicToneMapping, RepeatWrapping } from 'three'
+import { ACESFilmicToneMapping, PCFSoftShadowMap, RepeatWrapping } from 'three'
 import Player from './player'
 import { INTRO_CAM_START } from './controls'
 import SunsetSky from './environment/SunsetSky'
@@ -27,6 +27,7 @@ import { worldControls } from './controls'
 import { primeMusic, sfx } from './sound'
 import { skipIntro } from './avatar'
 import { portalBus } from './dimensions/portalBus'
+import { getQuality } from './quality'
 
 const SECTION_COMPONENTS = {
   projects: ProjectsSection,
@@ -91,7 +92,7 @@ function OverworldScene() {
     <>
       <SunsetSky />
       <DayNightCycle />
-      <fogExp2 attach="fog" args={['#e8a06a', 0.0038]} />
+      <fogExp2 attach="fog" args={['#e8a06a', 0.0038]} baseDensity={0.0038 * getQuality().fogDensityScale} />
       <Suspense fallback={null}>
         <WorldModel />
         <Clouds />
@@ -402,10 +403,11 @@ export default function WorldExperience() {
     <div className="fixed inset-0 bg-black" onClick={handleCanvasClick}>
       <Canvas
         shadows
-        dpr={[1, 1.75]}
-        gl={{ antialias: true, powerPreference: 'high-performance' }}
+        dpr={getQuality().dpr}
+        gl={{ antialias: getQuality().antialias, powerPreference: 'high-performance' }}
         camera={{ fov: 70, near: 0.1, far: 700, position: MENU_CAM_START }}
         onCreated={({ gl }) => {
+          gl.shadowMap.type = PCFSoftShadowMap
           gl.toneMapping = ACESFilmicToneMapping
           gl.toneMappingExposure = 1.1
         }}
@@ -546,6 +548,9 @@ export default function WorldExperience() {
           onSection={(key) => setSection(key)}
         />
       )}
+
+      {/* persistent cinematic vignette */}
+      <div className="nc-vignette" />
     </div>
   )
 }

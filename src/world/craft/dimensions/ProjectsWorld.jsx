@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react'
 import { Stars } from '@react-three/drei'
 import { TerrainGrid, mulberry32, cityPalette } from './terrainKit'
 import { buildVoxelGeometry } from './voxelMesh'
+import VoxelRenderer from './VoxelRenderer'
 import { setField } from './worldStore'
 import Portal from './Portal'
 import VoxelSign from './signs'
@@ -152,12 +153,7 @@ export default function ProjectsWorld() {
       {/* warm city glow */}
       <pointLight position={[0, 16, 0]} color="#ffb37a" intensity={45} distance={58} decay={2} />
 
-      <mesh geometry={geo.solid} receiveShadow>
-        <meshLambertMaterial vertexColors />
-      </mesh>
-      <mesh geometry={geo.glow}>
-        <meshBasicMaterial vertexColors toneMapped={false} />
-      </mesh>
+      <VoxelRenderer geo={geo} />
 
       {/* project signs + interactables */}
       {PROJECTS.map((proj, i) => {
@@ -215,3 +211,4 @@ function ProjectBuilding({ proj, index, signPos, rotationY }) {
     />
   )
 }
+

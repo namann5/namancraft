@@ -3,6 +3,7 @@ import { useFrame } from '@react-three/fiber'
 import { Stars } from '@react-three/drei'
 import { TerrainGrid, mulberry32, endPalette } from './terrainKit'
 import { buildVoxelGeometry } from './voxelMesh'
+import VoxelRenderer from './VoxelRenderer'
 import { setField } from './worldStore'
 import Portal from './Portal'
 import VoxelSign, { makeTextTexture } from './signs'
@@ -285,9 +286,7 @@ export default function EndWorld() {
       <hemisphereLight args={['#8f7bd8', '#120a24', 0.65]} />
       <directionalLight position={[-24, 50, -14]} color="#cdb8ff" intensity={0.55} />
 
-      <mesh geometry={geo.solid} receiveShadow>
-        <meshLambertMaterial vertexColors />
-      </mesh>
+      <VoxelRenderer geo={geo} />
 
       <GiantBook position={[bookSpot.x, 0, bookSpot.z]} />
 
@@ -309,3 +308,4 @@ export default function EndWorld() {
     </>
   )
 }
+

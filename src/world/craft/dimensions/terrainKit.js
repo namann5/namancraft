@@ -65,13 +65,13 @@ let netherBlocks = null
 export function netherPalette() {
   if (!netherBlocks) {
     netherBlocks = defineBlocks([
-      { name: 'netherrack', color: '#4a1512' },
-      { name: 'netherrackDark', color: '#380f0d' },
-      { name: 'basalt', color: '#33333c' },
-      { name: 'basaltLight', color: '#454550' },
-      { name: 'blackstone', color: '#17171d' },
-      { name: 'soul', color: '#24302e' },
-      { name: 'magma', color: '#8a3312' },
+      { name: 'netherrack', color: '#6d2b1e', tex: 'netherrack' },
+      { name: 'netherrackDark', color: '#4a1a10', tex: 'netherrack' },
+      { name: 'basalt', color: '#3a3a44', tex: 'blackstone' },
+      { name: 'basaltLight', color: '#4a4a56', tex: 'stone' },
+      { name: 'blackstone', color: '#1e1e26', tex: 'blackstone' },
+      { name: 'soul', color: '#24302e', tex: 'endstone' },
+      { name: 'magma', color: '#8a3312', tex: 'netherrack' },
       { name: 'lava', color: '#ff7b1f', glow: true },
       { name: 'lavaCore', color: '#ffd23e', glow: true },
       { name: 'fire', color: '#ffb03a', glow: true },
@@ -84,12 +84,12 @@ let endBlocks = null
 export function endPalette() {
   if (!endBlocks) {
     endBlocks = defineBlocks([
-      { name: 'endstone', color: '#ded8a2' },
-      { name: 'endstoneDeep', color: '#b5ad78' },
-      { name: 'purpur', color: '#9d6bad' },
-      { name: 'purpurDark', color: '#6d4380' },
-      { name: 'endBrick', color: '#c9c39a' },
-      { name: 'obsidian', color: '#17101f' },
+      { name: 'endstone', color: '#ded8a2', tex: 'endPurple' },
+      { name: 'endstoneDeep', color: '#b5ad78', tex: 'endPurple' },
+      { name: 'purpur', color: '#9d6bad', tex: 'endPurple' },
+      { name: 'purpurDark', color: '#6d4380', tex: 'obsidian' },
+      { name: 'endBrick', color: '#c9c39a', tex: 'stoneBrick' },
+      { name: 'obsidian', color: '#17101f', tex: 'obsidian' },
       { name: 'endGlow', color: '#c9a0ff', glow: true },
     ])
   }
@@ -100,23 +100,23 @@ let techBlocks = null
 export function techPalette() {
   if (!techBlocks) {
     techBlocks = defineBlocks([
-      { name: 'floorTile', color: '#cdd3dd' },
-      { name: 'floorTileAlt', color: '#b7bfcc' },
-      { name: 'floorDark', color: '#3c4452' },
+      { name: 'floorTile', color: '#cdd3dd', tex: 'floorTile' },
+      { name: 'floorTileAlt', color: '#b7bfcc', tex: 'floorTile' },
+      { name: 'floorDark', color: '#3c4452', tex: 'concrete' },
       { name: 'gridLine', color: '#37e2c4', glow: true },
-      { name: 'white', color: '#eef1f5' },
-      { name: 'steel', color: '#8d99ab' },
-      { name: 'steelDark', color: '#59626f' },
-      { name: 'glass', color: '#9fdcf0' },
+      { name: 'white', color: '#eef1f5', tex: 'concrete' },
+      { name: 'steel', color: '#8d99ab', tex: 'concrete' },
+      { name: 'steelDark', color: '#59626f', tex: 'blackstone' },
+      { name: 'glass', color: '#9fdcf0', tex: 'glass', opacity: 0.8 },
       { name: 'neonCyan', color: '#2ee6ff', glow: true },
       { name: 'neonMagenta', color: '#ff4fd8', glow: true },
       { name: 'neonLime', color: '#8dff3e', glow: true },
       { name: 'neonAmber', color: '#ffc23e', glow: true },
       { name: 'neonViolet', color: '#a06bff', glow: true },
-      { name: 'grassTech', color: '#67d08b' },
+      { name: 'grassTech', color: '#67d08b', tex: 'grassTop' },
       { name: 'ember', color: '#ffb03a', glow: true },
-      { name: 'coal', color: '#17171d' },
-      { name: 'ironBlock', color: '#7a8494' },
+      { name: 'coal', color: '#17171d', tex: 'blackstone' },
+      { name: 'ironBlock', color: '#7a8494', tex: 'stone' },
     ])
   }
   return techBlocks
@@ -126,19 +126,19 @@ let cityBlocks = null
 export function cityPalette() {
   if (!cityBlocks) {
     cityBlocks = defineBlocks([
-      { name: 'asphalt', color: '#23252b' },
-      { name: 'sidewalk', color: '#4a4d55' },
-      { name: 'curb', color: '#6a6e78' },
-      { name: 'concrete', color: '#7d7f87' },
-      { name: 'concreteDark', color: '#55575e' },
-      { name: 'brickRed', color: '#7a3b32' },
-      { name: 'sandstone', color: '#cbb98a' },
-      { name: 'glassBlue', color: '#274a66' },
+      { name: 'asphalt', color: '#23252b', tex: 'concrete' },
+      { name: 'sidewalk', color: '#c8ced8', tex: 'floorTile' },
+      { name: 'curb', color: '#6a6e78', tex: 'concrete' },
+      { name: 'concrete', color: '#7d7f87', tex: 'concrete' },
+      { name: 'concreteDark', color: '#55575e', tex: 'concrete' },
+      { name: 'brickRed', color: '#93433a', tex: 'brickRed' },
+      { name: 'sandstone', color: '#cbb98a', tex: 'sand' },
+      { name: 'glassBlue', color: '#274a66', tex: 'glass', opacity: 0.75 },
       { name: 'windowWarm', color: '#ffd98a', glow: true },
       { name: 'windowCool', color: '#9fd8ff', glow: true },
       { name: 'lamp', color: '#ffe9b0', glow: true },
-      { name: 'metal', color: '#3a3d44' },
-      { name: 'roofGreen', color: '#3d6b4f' },
+      { name: 'metal', color: '#3a3d44', tex: 'blackstone' },
+      { name: 'roofGreen', color: '#3d6b4f', tex: 'grassTop' },
     ])
   }
   return cityBlocks
