@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { sfx } from '../sound'
 
-// Shared Minecraft-style panel shell: dark stone slab, pixel border,
+// Shared heritage panel shell: warm clay card, gold accent line,
 // title bar with a close button. Escape closes.
 export default function McPanel({ title, subtitle, onClose, children, wide = false }) {
   useEffect(() => {
@@ -25,9 +25,9 @@ export default function McPanel({ title, subtitle, onClose, children, wide = fal
         aria-modal="true"
         aria-label={title}
       >
-        <header className="flex items-center justify-between gap-4 border-b-[3px] border-black bg-[#1b1b1b] px-5 py-4">
+        <header className="flex items-center justify-between gap-4 border-b border-[#f5c877]/25 bg-[#241a11] px-5 py-4">
           <div>
-            <h2 className="font-pixel text-sm text-[#ffe066] sm:text-base">{title}</h2>
+            <h2 className="font-pixel text-sm text-[#f5c877] sm:text-base">{title}</h2>
             {subtitle && (
               <p className="mt-2 text-xs uppercase tracking-[0.25em] text-[#9aa39a]">{subtitle}</p>
             )}

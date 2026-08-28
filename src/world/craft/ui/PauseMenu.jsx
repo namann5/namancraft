@@ -9,8 +9,8 @@ export default function PauseMenu({ onResume, onMainMenu, onSection }) {
         <MusicToggle />
       </div>
       <div className="flex w-full max-w-[380px] flex-col items-center gap-6">
-        <h2 className="font-pixel text-lg text-white [text-shadow:0_4px_0_#3a3a3a,0_6px_2px_rgba(0,0,0,0.7)]">
-          GAME MENU
+        <h2 className="font-pixel text-lg text-white [text-shadow:0_2px_14px_rgba(255,166,80,0.3)]">
+          MENU
         </h2>
 
         <nav className="flex w-full flex-col gap-3" aria-label="Game menu">
@@ -58,7 +58,7 @@ export default function PauseMenu({ onResume, onMainMenu, onSection }) {
             onMouseEnter={sfx.hover}
             className="mc-btn font-pixel h-[46px] w-full text-[11px]"
           >
-            SAVE & QUIT TO TITLE
+            EXIT TO TITLE
           </button>
         </nav>
 

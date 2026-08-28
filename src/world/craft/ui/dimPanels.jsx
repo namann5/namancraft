@@ -19,7 +19,7 @@ const RARITY_COLORS = {
 export function AdvancementPanel({ data, onClose }) {
   const color = RARITY_COLORS[data.rarity] || RARITY_COLORS.common
   return (
-    <McPanel title={data.title} subtitle="Advancement unlocked" onClose={onClose}>
+    <McPanel title={data.title} subtitle="Medal earned" onClose={onClose}>
       <div className="flex items-center gap-4">
         <VoxelIcon type={data.icon} size={52} />
         <div className="flex flex-col gap-2">
@@ -33,7 +33,7 @@ export function AdvancementPanel({ data, onClose }) {
       </div>
       <p className="mc-slot mt-5 px-4 py-4 text-sm leading-relaxed text-[#c9cfc4]">{data.text}</p>
       <p className="mt-5 text-center text-[10px] uppercase tracking-[0.3em] text-[#9aa39a]/70">
-        Advancement progress saved to the guild ledger
+        Medal recorded in the realm chronicle
       </p>
     </McPanel>
   )
@@ -61,7 +61,7 @@ export function SkillPanel({ data, onClose }) {
     <McPanel title={data.name} subtitle={`${data.category} · Rangoli Court station`} onClose={onClose}>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <span className="font-pixel text-[10px] uppercase" style={{ color: data.color }}>
-          Experience level
+          Mastery
         </span>
         <LevelPips level={data.level} />
       </div>
