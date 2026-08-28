@@ -497,6 +497,10 @@ export default function WorldExperience() {
       {/* dimension teleport cinematics */}
       <TravelOverlay travel={travel} />
 
+      {/* cinematic letterbox — subtle framing that deepens mid-travel */}
+      <div className={`nc-letterbox nc-letterbox--top${travel ? ' nc-letterbox--travel' : ''}`} aria-hidden="true" />
+      <div className={`nc-letterbox nc-letterbox--bottom${travel ? ' nc-letterbox--travel' : ''}`} aria-hidden="true" />
+
       {/* welcome toast: mounted once after the first fly-in, self-hides */}
       {welcomed && !section && !panel && <WelcomeToast show />}
 
