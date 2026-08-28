@@ -67,7 +67,7 @@ function preloadWorld(id) {
 // are snapped to the terrain at runtime so they always sit on grass.
 // ------------------------------------------------------------------
 const HUB_PORTALS = [
-  { id: 'nether', x: -13, z: -36, rotY: Math.PI / 2, title: 'MEDALS', subtitle: 'DIWALI BAZAAR' },
+  { id: 'nether', x: -13, z: -36, rotY: Math.PI / 2, title: 'ACHIEVEMENTS', subtitle: 'DIWALI BAZAAR' },
   { id: 'end', x: -20, z: -66, rotY: Math.PI * 0.72, title: 'RESUME', subtitle: 'TEMPLE OF THE PAST' },
   { id: 'skills', x: 14, z: -78, rotY: -Math.PI * 0.72, title: 'SKILLS', subtitle: 'RANGOLI COURT' },
   { id: 'projects', x: 16, z: -88, rotY: -Math.PI / 2, title: 'PROJECTS', subtitle: 'THE FORT QUARTER' },
@@ -323,7 +323,7 @@ function applyVertexShading(mesh) {
 function NoWebGL() {
   return (
     <div className="nc-fallback">
-      <h1 className="font-pixel text-xl text-[#f5c877]">Naman · The Peacock Realms</h1>
+      <h1 className="font-pixel text-xl text-[#ffe066]">NAMANCRAFT</h1>
       <p className="font-pixel mt-2 text-[10px] uppercase tracking-[0.3em] text-[#9aa39a]">
         Naman Singh — Full Stack Developer
       </p>
@@ -675,8 +675,8 @@ export default function WorldExperience() {
 
       {phase === 'intro' && (
         <div className="nc-intrologo" aria-hidden="true">
-          <span className="nc-intrologo-title">Naman · The Peacock Realms</span>
-          <span className="nc-intrologo-sub">Naman Singh</span>
+          <span className="nc-intrologo-title">NAMANCRAFT</span>
+          <span className="nc-intrologo-sub">The Peacock Realms · Naman Singh</span>
         </div>
       )}
 

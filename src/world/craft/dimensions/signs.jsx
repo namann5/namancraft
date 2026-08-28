@@ -3,8 +3,8 @@ import * as THREE from 'three'
 
 // ------------------------------------------------------------------
 // VoxelSign — painted canvas-texture sign boards used across the
-// dimensions. Uses an elegant serif once it's loaded, falls back to
-// monospace for the first frames.
+// dimensions. Uses the pixel font once it's loaded (fontsource loads
+// it globally), falls back to monospace for the first frames.
 // ------------------------------------------------------------------
 
 export function makeTextTexture({ lines = [], width = 512, height = 256, bg = '#141419', border = '#000000', colors = ['#ffe066'], sizes = [64], shadow = true }) {
@@ -13,7 +13,7 @@ export function makeTextTexture({ lines = [], width = 512, height = 256, bg = '#
   canvas.height = height
 
   const texture = new THREE.CanvasTexture(canvas)
-  texture.magFilter = THREE.LinearFilter
+  texture.magFilter = THREE.NearestFilter
   texture.minFilter = THREE.LinearMipmapLinearFilter
   texture.colorSpace = THREE.SRGBColorSpace
   texture.anisotropy = 2
@@ -34,14 +34,14 @@ export function makeTextTexture({ lines = [], width = 512, height = 256, bg = '#
     lines.forEach((line, i) => {
       if (!line) return
       const size = sizes[Math.min(i, sizes.length - 1)]
-      ctx.font = `600 ${size}px Fraunces, Georgia, serif`
+      ctx.font = `${size}px "Press Start 2P", monospace`
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
       const y = (height / (total + 1)) * (i + 1)
       const color = colors[Math.min(i, colors.length - 1)]
       if (shadow) {
         ctx.fillStyle = 'rgba(0,0,0,0.85)'
-        ctx.fillText(line, width / 2 + size * 0.03, y + size * 0.03)
+        ctx.fillText(line, width / 2 + size * 0.12, y + size * 0.12)
       }
       ctx.fillStyle = color
       ctx.fillText(line, width / 2, y)
@@ -52,7 +52,7 @@ export function makeTextTexture({ lines = [], width = 512, height = 256, bg = '#
   paint()
   if (document.fonts?.load) {
     Promise.all([
-      document.fonts.load('600 16px Fraunces'),
+      document.fonts.load('16px "Press Start 2P"'),
       document.fonts.ready,
     ]).then(paint).catch(() => {})
   }

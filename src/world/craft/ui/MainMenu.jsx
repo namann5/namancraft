@@ -5,11 +5,11 @@ import MusicToggle from './MusicToggle'
 import VoxelIcon from './VoxelIcon'
 
 const SECTIONS = [
-  { key: 'projects', label: 'The Fort Quarter', icon: 'map' },
-  { key: 'journey', label: 'My Journey', icon: 'compass' },
-  { key: 'inventory', label: 'My Toolkit', icon: 'book' },
-  { key: 'achievements', label: 'Medals', icon: 'trophy' },
-  { key: 'connect', label: 'Reach Me', icon: 'star' },
+  { key: 'projects', label: 'Projects', icon: 'chest' },
+  { key: 'journey', label: 'My Journey', icon: 'map' },
+  { key: 'inventory', label: 'Inventory', icon: 'sword' },
+  { key: 'achievements', label: 'Achievements', icon: 'trophy' },
+  { key: 'connect', label: 'Connect', icon: 'enderchest' },
 ]
 
 export default function MainMenu({ ready, entering, onPlay, onSection, touch }) {
@@ -39,10 +39,10 @@ export default function MainMenu({ ready, entering, onPlay, onSection, touch }) 
       <div className="relative flex w-full max-w-[520px] flex-1 flex-col items-center justify-center px-4 pb-24 pt-[7svh] max-sm:pb-20">
         {/* title block */}
         <div className="rv relative flex flex-col items-center" style={{ animationDelay: '80ms' }}>
-          <h1 className="font-pixel text-center text-[clamp(26px,6vw,52px)] leading-tight text-white [text-shadow:0_3px_20px_rgba(255,166,80,0.3),0_8px_40px_rgba(0,0,0,0.7)]">
-            NAMAN · THE PEACOCK REALMS
+          <h1 className="font-pixel text-center text-[clamp(26px,6vw,52px)] leading-tight text-white [text-shadow:0_4px_0_#3a3a3a,0_6px_2px_rgba(0,0,0,0.65)]">
+            NAMANCRAFT
           </h1>
-          <p className="animate-mc-splash font-pixel absolute -right-4 -top-4 origin-right whitespace-nowrap text-[10px] text-[#f5c877] [text-shadow:0_1px_8px_rgba(0,0,0,0.8)] sm:-right-10 sm:text-xs">
+          <p className="animate-mc-splash font-pixel absolute -right-4 -top-4 origin-right whitespace-nowrap text-[10px] text-[#ffe066] [text-shadow:2px_2px_0_rgba(0,0,0,0.7)] sm:-right-10 sm:text-xs">
             {splash}
           </p>
         </div>
@@ -128,7 +128,7 @@ export default function MainMenu({ ready, entering, onPlay, onSection, touch }) 
 
       {/* bottom bar */}
       <footer className="rv relative flex w-full items-end justify-between px-4 pb-3 text-[10px] uppercase tracking-[0.22em] text-[#c9d4cb]/70 [text-shadow:1px_1px_0_rgba(0,0,0,0.8)] max-sm:flex-col max-sm:items-center max-sm:gap-2" style={{ animationDelay: '1020ms' }}>
-        <span>Naman · The Peacock Realms</span>
+        <span>NamanCraft v1.0</span>
         <nav className="flex items-center gap-3" aria-label="Quick links">
           <a href={LINKS.github} target="_blank" rel="noreferrer" className="transition-colors hover:text-[#ffe066]">
             GitHub

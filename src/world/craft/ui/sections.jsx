@@ -68,11 +68,11 @@ export function ProjectsSection({ onClose }) {
 const ABOUT = {
   intro:
     'Creative developer building AI that spots deepfakes, software that drives cars, and interfaces people actually use.',
-  interests: ['AI & computer vision', 'Autonomous systems', 'Open source', '3D / clay worlds'],
+  interests: ['AI & computer vision', 'Autonomous systems', 'Open source', '3D / voxel worlds'],
   philosophy:
-    'Build things that ship. Favor clean architecture, honest tooling, and small sharp commits over demo-ware — every structure in this world corresponds to something real.',
+    'Build things that ship. Favor clean architecture, honest tooling, and small sharp commits over demo-ware — every block in this world corresponds to something real.',
   focus:
-    'Deepfake detection · Autonomous driving · AI customer service · and this very world (the Peacock Realms).',
+    'Deepfake detection · Autonomous driving · AI customer service · and this very world (NamanCraft).',
 }
 
 export function HomeSection({ onClose }) {
@@ -147,7 +147,7 @@ export function JourneySection({ onClose }) {
 
 export function InventorySection({ onClose }) {
   return (
-    <McPanel title="My Toolkit" subtitle="Technical skills — tools of the trade" onClose={onClose} wide>
+    <McPanel title="Inventory" subtitle="Technical skills — tools of the trade" onClose={onClose} wide>
       <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
         {INVENTORY.map((item) => (
           <div key={item.name} className="group relative">
@@ -189,7 +189,7 @@ export function AchievementsSection({ onClose }) {
   ].filter(Boolean)
 
   return (
-      <McPanel title="Medals" subtitle="Honours earned" onClose={onClose} wide>
+    <McPanel title="Achievements" subtitle="Advancements unlocked" onClose={onClose} wide>
       <ul className="flex flex-col gap-3">
         {ACHIEVEMENTS.map((a) => (
           <li key={a.title} className="mc-slot flex items-center gap-4 px-4 py-3.5">
@@ -221,7 +221,7 @@ export function ConnectSection({ onClose }) {
     { label: 'Resume', href: LINKS.resume, note: 'PDF coming soon', icon: 'chest' },
   ]
   return (
-    <McPanel title="Connect" subtitle="Open the courtyard gate" onClose={onClose}>
+    <McPanel title="Connect" subtitle="Open the trade window" onClose={onClose}>
       <ul className="flex flex-col gap-3">
         {rows.map((r) => (
           <li key={r.label}>
