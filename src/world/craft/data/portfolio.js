@@ -2,10 +2,10 @@
 // Edit here to update INVENTORY / MY JOURNEY / ACHIEVEMENTS / CONNECT.
 
 export const SPLASHES = [
-  'Explore. Build. Bharat.',
-  'Lit like Diwali!',
+  'Explore. Build. Create.',
+  'Lit like a beacon!',
   'Also try /classic!',
-  'Powered by chai!',
+  'Powered by coffee!',
   'Now with touch support!',
   '100% handcrafted & hand-dyed!',
 ]
@@ -18,20 +18,20 @@ export const LINKS = {
   resume: '#', // TODO: link a resume PDF from /public
 }
 
-// Inventory: tech as festival-heritage items (original voxel icons, no MC assets).
+// Inventory: tech as voxel items (original voxel icons, no MC assets).
 export const INVENTORY = [
-  { name: 'Java', icon: 'sword', rarity: '#d8d8d8', note: 'Kataar — first language forged' },
-  { name: 'JavaScript', icon: 'redstone', rarity: '#ff5b4d', note: 'Saree thread — makes everything move' },
-  { name: 'React', icon: 'diamond', rarity: '#5decf5', note: 'Hema — the UI gem' },
-  { name: 'Node.js', icon: 'emerald', rarity: '#3ddc84', note: 'Panna — server-side gem' },
-  { name: 'Python', icon: 'book', rarity: '#c78aff', note: 'Palm-leaf book — AI & ML verses' },
-  { name: 'MongoDB', icon: 'chest', rarity: '#c98d4b', note: 'Pitara — stores all the treasure' },
+  { name: 'Java', icon: 'sword', rarity: '#d8d8d8', note: 'First language forged' },
+  { name: 'JavaScript', icon: 'redstone', rarity: '#ff5b4d', note: 'Redstone wire — makes everything move' },
+  { name: 'React', icon: 'diamond', rarity: '#5decf5', note: 'The UI gem' },
+  { name: 'Node.js', icon: 'emerald', rarity: '#3ddc84', note: 'Server-side gem' },
+  { name: 'Python', icon: 'book', rarity: '#c78aff', note: 'Spellbook — AI & ML verses' },
+  { name: 'MongoDB', icon: 'chest', rarity: '#c98d4b', note: 'Endless chest — stores all the treasure' },
   { name: 'Git / GitHub', icon: 'compass', rarity: '#ffd9a0', note: 'Compass — never loses the trail' },
   { name: 'Docker', icon: 'obsidian', rarity: '#8b5cf6', note: 'Black stone — container-grade tough' },
   { name: 'Blender', icon: 'command', rarity: '#e79b5a', note: 'Chisel — sculpts this whole realm' },
-  { name: 'SQL', icon: 'bucket', rarity: '#9ecbff', note: 'Matka — pours structured water' },
-  { name: 'C/C++', icon: 'anvil', rarity: '#b9c2cc', note: "Lohar's anvil — heavy systems work" },
-  { name: 'AI / ML', icon: 'star', rarity: '#ffe066', note: 'Malaik star — rarest of the rare' },
+  { name: 'SQL', icon: 'bucket', rarity: '#9ecbff', note: 'Water bucket — pours structured data' },
+  { name: 'C/C++', icon: 'anvil', rarity: '#b9c2cc', note: 'Anvil — heavy systems work' },
+  { name: 'AI / ML', icon: 'star', rarity: '#ffe066', note: 'Beacon star — rarest of the rare' },
 ]
 
 export const JOURNEY = [
@@ -78,7 +78,7 @@ export const ACHIEVEMENTS = [
     title: 'First Light',
     text: 'Joined GitHub and pushed the first public repositories',
     rarity: 'common',
-    date: '2025 · The Ghat',
+    date: '2025 · Spawn',
   },
   {
     icon: 'diamond',
@@ -117,7 +117,7 @@ export const ACHIEVEMENTS = [
   },
 ]
 
-// Rangoli Court stations — one structure per technology in the Skills world.
+// Skill stations — one structure per technology in the Skills world.
 // Level is shown as voxel pips (1-5), never progress bars.
 export const SKILL_STATIONS = [
   { name: 'Java', category: 'Language', level: 4, color: '#ff9d5c', built: ['AI deepfake detection services', 'Autonomous driving modules', 'Years of DSA foundations'] },
@@ -134,7 +134,7 @@ export const SKILL_STATIONS = [
   { name: 'AI / ML', category: 'Specialty', level: 4, color: '#ffe066', built: ['Deepfake detection models', 'Story generation features', 'Computer vision experiments'] },
 ]
 
-// Temple of the Past — resume sections. Honest stubs where public data
+// Resume sections. Honest stubs where public data
 // doesn't exist yet; edit here when adding real entries.
 export const RESUME = {
   education: [
@@ -157,7 +157,7 @@ export const RESUME = {
     { k: 'AI Deepfake Detection', v: 'Flagship — catches synthetic media end to end' },
     { k: 'Autonomous Driving Systems', v: 'Perception, planning and control, clean architecture' },
     { k: 'AI Customer Service', v: 'Full-stack support platform with context memory' },
-    { k: 'More', v: 'Explore the Fort Quarter for the full tour' },
+    { k: 'More', v: 'Explore the Projects Quarter for the full tour' },
   ],
   certifications: [
     { k: 'Status', v: 'Vault still sealed — certifications coming soon' },

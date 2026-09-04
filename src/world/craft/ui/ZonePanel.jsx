@@ -36,7 +36,7 @@ function AboutPanel() {
         drives cars, and open-source tools people actually use.
       </p>
       <p className="text-base font-medium leading-[1.6] tracking-[-0.4px] text-[#c9d4cb]">
-        Day job: turning chai into commits. Side quest: contributing to
+        Day job: turning ideas into commits. Side quest: contributing to
         projects like MergeShip, SecuScan, and UltimateHealth.
       </p>
       <div>

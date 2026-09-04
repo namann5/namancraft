@@ -484,6 +484,24 @@ body {
   --tc2: #d9b3ff;
 }
 
+/* rendered cinematic still of the destination dimension, shown as the
+   travel cover so the dimension shift doubles as a stylized preview */
+.travel-still {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 500ms ease;
+}
+.travel-overlay.out .travel-still,
+.travel-overlay.hold .travel-still {
+  opacity: 1;
+}
+.travel-overlay.in .travel-still {
+  opacity: 0.85;
+}
+
 .travel-disc {
   position: absolute;
   left: 50%;

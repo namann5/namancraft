@@ -5,6 +5,7 @@ import About from './pages/About'
 import Projects from './pages/Projects'
 import Skills from './pages/Skills'
 import Contact from './pages/Contact'
+import CinematicHero from './pages/CinematicHero'
 import { initLenis, destroyLenis, getLenis } from './lib/smoothScroll'
 import './index.css'
 
@@ -33,7 +34,7 @@ function App() {
     <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
       <ScrollReset />
       <Routes>
-        <Route path="/" element={<Suspense fallback={null}><WorldExperience /></Suspense>} />
+        <Route path="/" element={<CinematicHero />} />
         <Route path="/classic" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/projects" element={<Projects />} />

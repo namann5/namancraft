@@ -46,10 +46,10 @@ const BOOM_DIST = 3.9
 // against each landmark. Portals still link to the other dimensions.
 // ------------------------------------------------------------------
 const OVERWORLD_JOURNEY = [
-  { name: 'spawn', label: "The Ghat · Arrival", x: 2.2, z: 7.5 },
-  { name: 'clock', label: 'Heritage Clock · My Journey', x: -20.5, z: -10 },
-  { name: 'home', label: 'The Haveli · Home', x: 27.5, z: -49.5 },
-  { name: 'hub', label: 'Festival Gate · Portal Junction', x: 0.5, z: -13.5 },
+  { name: 'spawn', label: "Spawn · Arrival", x: 2.2, z: 7.5 },
+  { name: 'clock', label: 'World Clock · My Journey', x: -20.5, z: -10 },
+  { name: 'home', label: 'The Home · Home Base', x: 27.5, z: -49.5 },
+  { name: 'hub', label: 'Portal Hub · Junction', x: 0.5, z: -13.5 },
 ]
 const MOUSE_SENS = 0.0023
 

@@ -11,7 +11,6 @@ import Clouds from './environment/Clouds'
 import Particles from './environment/Particles'
 import Ambience from './environment/Ambience'
 import Clock from './environment/Clock'
-import FestivalDecor from './environment/FestivalDecor'
 import { dayState } from './environment/dayCycle'
 import ZonePanel from './ui/ZonePanel'
 import TouchControls from './ui/TouchControls'
@@ -67,18 +66,18 @@ function preloadWorld(id) {
 // are snapped to the terrain at runtime so they always sit on grass.
 // ------------------------------------------------------------------
 const HUB_PORTALS = [
-  { id: 'nether', x: -13, z: -36, rotY: Math.PI / 2, title: 'ACHIEVEMENTS', subtitle: 'DIWALI BAZAAR' },
-  { id: 'end', x: -20, z: -66, rotY: Math.PI * 0.72, title: 'RESUME', subtitle: 'TEMPLE OF THE PAST' },
-  { id: 'skills', x: 14, z: -78, rotY: -Math.PI * 0.72, title: 'SKILLS', subtitle: 'RANGOLI COURT' },
-  { id: 'projects', x: 16, z: -88, rotY: -Math.PI / 2, title: 'PROJECTS', subtitle: 'THE FORT QUARTER' },
+  { id: 'nether', x: -13, z: -36, rotY: Math.PI / 2, title: 'ACHIEVEMENTS', subtitle: 'BLAZE BAZAAR' },
+  { id: 'end', x: -20, z: -66, rotY: Math.PI * 0.72, title: 'RESUME', subtitle: 'THE END ARCHIVE' },
+  { id: 'skills', x: 14, z: -78, rotY: -Math.PI * 0.72, title: 'SKILLS', subtitle: 'THE SKILL COURT' },
+  { id: 'projects', x: 16, z: -88, rotY: -Math.PI / 2, title: 'PROJECTS', subtitle: 'THE PROJECTS QUARTER' },
 ]
 
 // directional signposts at the path junction, pointing down the trail
 const JUNCTION_SIGNS = [
-  { x: -4.6, z: -11.6, line: '< DIWALI BAZAAR', color: '#ffb03a' },
-  { x: -1.6, z: -12.1, line: '< TEMPLE OF THE PAST', color: '#d9b3ff' },
-  { x: 1.6, z: -12.1, line: 'RANGOLI COURT >', color: '#7fe0ae' },
-  { x: 4.6, z: -11.6, line: 'FORT QUARTER >', color: '#ffd97a' },
+  { x: -4.6, z: -11.6, line: '< BLAZE BAZAAR', color: '#ffb03a' },
+  { x: -1.6, z: -12.1, line: '< THE END ARCHIVE', color: '#d9b3ff' },
+  { x: 1.6, z: -12.1, line: 'THE SKILL COURT >', color: '#7fe0ae' },
+  { x: 4.6, z: -11.6, line: 'THE PROJECTS QUARTER >', color: '#ffd97a' },
 ]
 
 function PortalHub() {
@@ -122,7 +121,6 @@ function OverworldScene() {
         <Particles />
         <Clock />
         <Ambience />
-        <FestivalDecor />
       </Suspense>
       <PortalHub />
     </>
@@ -178,9 +176,7 @@ function WorldModel() {
         name === 'mat_window' ||
         name === 'mat_clockglow' ||
         name === 'mat_blossom' ||
-        name.startsWith('mat_flower_') ||
-        name === 'mat_kalash' ||
-        name === 'mat_rangoli'
+        name.startsWith('mat_flower_')
       ) {
         emisRef.current.push(obj)
         mat.toneMapped = false
@@ -232,14 +228,6 @@ function WorldModel() {
         m.emissiveIntensity = (0.35 + Math.sin(t * 1.2 + i) * 0.12) * boost * 0.5
       } else if (n.startsWith('mat_flower_')) {
         m.emissiveIntensity = (0.4 + Math.sin(t * 1.6 + i * 1.3) * 0.14) * boost * 0.6
-      } else if (n === 'mat_kalash') {
-        // gold chhatri/kalash finials — a warm steady glow, brightest at night
-        m.emissive.set('#ffcf5e')
-        m.emissiveIntensity = (0.45 + Math.sin(t * 1.5 + i * 2.2) * 0.12) * boost
-      } else if (n === 'mat_rangoli') {
-        // marigold rangoli/kolam floor glow — warms the plaza after dusk
-        m.emissive.set('#e8a92e')
-        m.emissiveIntensity = (0.3 + Math.sin(t * 0.8 + i * 1.1) * 0.1) * boost
       } else {
         // beacons keep their own accent colour
         m.emissiveIntensity = (0.8 + Math.sin(t * 2 + i * 1.7) * 0.35) * boost
@@ -676,7 +664,7 @@ export default function WorldExperience() {
       {phase === 'intro' && (
         <div className="nc-intrologo" aria-hidden="true">
           <span className="nc-intrologo-title">NAMANCRAFT</span>
-          <span className="nc-intrologo-sub">The Peacock Realms · Naman Singh</span>
+          <span className="nc-intrologo-sub">Naman Singh · Full Stack Developer</span>
         </div>
       )}
 

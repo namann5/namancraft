@@ -7,7 +7,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 
-const url = process.argv[2] || 'http://localhost:4173/namancraft/'
+const url = process.argv[2] || 'http://localhost:4173/namancraft/world'
 const CHROME_PATHS = [
   'C:/Program Files/Google/Chrome/Application/chrome.exe',
   'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',

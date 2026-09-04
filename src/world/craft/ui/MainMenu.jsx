@@ -55,7 +55,7 @@ export default function MainMenu({ ready, entering, onPlay, onSection, touch }) 
             Full Stack Developer
           </p>
           <p className="rv mt-3 text-[10px] uppercase tracking-[0.42em] text-[#ffe066]/90 [text-shadow:1px_1px_0_rgba(0,0,0,0.8)]" style={{ animationDelay: '480ms' }}>
-            Explore • Build • Bharat
+            Explore • Build • Create
           </p>
         </div>
 

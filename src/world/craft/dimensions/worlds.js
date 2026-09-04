@@ -11,8 +11,8 @@ import { lazy } from 'react'
 export const WORLDS = {
   overworld: {
     id: 'overworld',
-    name: 'The Peacock Realms',
-    travelTitle: 'RETURNING TO THE PEACOCK REALMS...',
+    name: 'NamanCraft',
+    travelTitle: 'RETURNING TO NAMANCRAFT...',
     color: '#7b2fbf',
     color2: '#d8b4fe',
     Component: null, // rendered directly by WorldExperience (GLB world)
@@ -21,8 +21,8 @@ export const WORLDS = {
   },
   nether: {
     id: 'nether',
-    name: 'Diwali Bazaar',
-    travelTitle: 'TRAVELING TO THE DIWALI BAZAAR...',
+    name: 'Blaze Bazaar',
+    travelTitle: 'TRAVELING TO THE BLAZE BAZAAR...',
     color: '#7b2fbf',
     color2: '#d8b4fe',
     Component: lazy(() => import('./NetherWorld')),
@@ -31,8 +31,8 @@ export const WORLDS = {
   },
   end: {
     id: 'end',
-    name: 'Temple of the Past',
-    travelTitle: 'TRAVELING TO THE TEMPLE OF THE PAST...',
+    name: 'The End Archive',
+    travelTitle: 'TRAVELING TO THE END ARCHIVE...',
     color: '#7b2fbf',
     color2: '#d8b4fe',
     Component: lazy(() => import('./EndWorld')),
@@ -41,8 +41,8 @@ export const WORLDS = {
   },
   skills: {
     id: 'skills',
-    name: 'Rangoli Court',
-    travelTitle: 'TRAVELING TO THE RANGOLI COURT...',
+    name: 'The Skill Court',
+    travelTitle: 'TRAVELING TO THE SKILL COURT...',
     color: '#7b2fbf',
     color2: '#d8b4fe',
     Component: lazy(() => import('./SkillsWorld')),
@@ -51,8 +51,8 @@ export const WORLDS = {
   },
   projects: {
     id: 'projects',
-    name: 'The Fort Quarter',
-    travelTitle: 'TRAVELING TO THE FORT QUARTER...',
+    name: 'The Projects Quarter',
+    travelTitle: 'TRAVELING TO THE PROJECTS QUARTER...',
     color: '#7b2fbf',
     color2: '#d8b4fe',
     Component: lazy(() => import('./ProjectsWorld')),

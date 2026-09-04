@@ -58,7 +58,7 @@ function LevelPips({ level }) {
 
 export function SkillPanel({ data, onClose }) {
   return (
-    <McPanel title={data.name} subtitle={`${data.category} · Rangoli Court station`} onClose={onClose}>
+    <McPanel title={data.name} subtitle={`${data.category} · Skill station`} onClose={onClose}>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <span className="font-pixel text-[10px] uppercase" style={{ color: data.color }}>
           Experience level
@@ -185,7 +185,7 @@ export function ResumeSectionPanel({ data, onClose }) {
   const title = RESUME_TITLES[topic] || data.title
 
   return (
-    <McPanel title={title} subtitle="Temple of the Past · resume archive" onClose={onClose}>
+    <McPanel title={title} subtitle="Resume archive" onClose={onClose}>
       {topic === 'achievements' ? (
         <ul className="flex flex-col gap-2">
           {ACHIEVEMENTS.map((a) => (
