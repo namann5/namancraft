@@ -249,6 +249,13 @@ export default function Portal({
   const pz = position[2]
   const gy = position[1]
 
+  // the sign must be wide enough for the LONGER of title/subtitle/sub-lines
+  const longestSign = Math.max(
+    title.length,
+    subtitle ? subtitle.length : 0,
+    ...(signLines || []).map((l) => (l || '').length),
+  )
+
   // register "[E] ENTER / click" trigger just in front of the frame
   useEffect(() => {
     registerInteractable({
@@ -391,7 +398,7 @@ export default function Portal({
           }
           colors={['#e9d5ff', '#c084fc']}
           bg="#150d20"
-          width={signWidth || Math.max(3.2, (signLines ? signLines[0] : title).length * 0.44)}
+          width={signWidth || Math.max(3.2, longestSign * 0.44)}
           height={1.4}
         />
       )}

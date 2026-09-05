@@ -33,7 +33,7 @@ const EYE_HEIGHT = 1.62
 const HEAD_HEIGHT = 1.72
 
 // camera framing
-const REST_LOOK = new THREE.Vector3(-6.5, 9.4, -26)
+const REST_LOOK = new THREE.Vector3(2.25, 9, -22)
 const MENU_FOV = 74
 const GAME_FOV = 71
 const SPRINT_FOV = 77
@@ -48,8 +48,8 @@ const BOOM_DIST = 3.9
 const OVERWORLD_JOURNEY = [
   { name: 'spawn', label: "Spawn · Arrival", x: 2.2, z: 7.5 },
   { name: 'clock', label: 'World Clock · My Journey', x: -20.5, z: -10 },
-  { name: 'home', label: 'The Home · Home Base', x: 27.5, z: -49.5 },
-  { name: 'hub', label: 'Portal Plaza · The Four Gateways', x: -19, z: -18 },
+  { name: 'home', label: 'The Home · Home Base', x: 23.5, z: -35.5 },
+  { name: 'hub', label: 'Portal Plaza · The Four Gateways', x: 2.25, z: -12.5 },
 ]
 const MOUSE_SENS = 0.0023
 

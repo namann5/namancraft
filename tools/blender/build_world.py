@@ -41,10 +41,13 @@ LAKE = (-44, 8, -22, 40)        # ellipse-ish basin rect
 LAKE_BOTTOM = 2
 
 # Loop 9/10 landmarks
-HOUSE_PAD = (15, 43, 38, 62)    # flatten rect (blender x,z)
-HOUSE_Y = 9                     # plateau height of the house plot
+# House relocated near spawn (the river side): original footprint used
+# HX=20..34 / HZ=42..56 on the north-east plateau; moved to flat grass
+# just north-east of the arrival plaza so the home sits next to the spawn.
+HOUSE_PAD = (12, 26, 34, 48)    # flatten rect (x0, z0, x1, z1)
+HOUSE_Y = 7                     # plateau height of the house plot
 CLOCK_PAD = (-29, 3, -19, 19)   # lakeside knoll for the clock wall
-POND_CENTER = (11, 46)          # foreground pond (script coords)
+POND_CENTER = (8, 22)           # foreground pond (script coords)
 POND_RX, POND_RZ = 3.4, 2.4
 
 
@@ -197,11 +200,11 @@ def add_fire_pit(grid):
 
 # ---------------------------------------------------------------- house
 
-HX0, HX1 = 20, 34              # wall footprint (blender x) — 15 wide
-HZ0, HZ1 = 42, 56              # wall footprint (blender z) — 15 deep
+HX0, HX1 = 16, 30              # wall footprint (blender x) — 15 wide
+HZ0, HZ1 = 28, 42              # wall footprint (blender z) — 15 deep
 WALL_H = 7                     # two storeys
-DOOR_Z = (49, 50)              # door gap on the west face
-CHIMNEY = (30, 52)             # chimney column (x, z)
+DOOR_Z = (35, 36)              # door gap on the west face
+CHIMNEY = (26, 38)             # chimney column (x, z)
 ROOF_LEVELS = 6
 
 LANTERN_SPOTS = []
@@ -240,11 +243,11 @@ def add_house(grid, heights):
                     continue
                 if corner:
                     block = "log"
-                elif on_x_edge and z in (44, 45, 46, 47, 51, 52, 53, 54, 55) and h in (3, 4, 5, 6):
+                elif on_x_edge and z in (30, 31, 32, 33, 37, 38, 39, 40, 41) and h in (3, 4, 5, 6):
                     block = "window"
-                elif on_z_edge and x in (23, 24, 26, 27, 29, 30, 31, 32) and h in (3, 4, 5, 6):
+                elif on_z_edge and x in (19, 20, 22, 23, 25, 26, 27, 28) and h in (3, 4, 5, 6):
                     block = "window"
-                elif on_z_edge and x in (23, 24, 30, 31) and h in (3, 4, 5, 6):
+                elif on_z_edge and x in (19, 20, 26, 27) and h in (3, 4, 5, 6):
                     block = "window"
                 else:
                     block = "plank"
@@ -267,17 +270,17 @@ def add_house(grid, heights):
         vx.set_block(grid, cx, y + hh, cz, "stone")
 
     # flower boxes under the front windows + vines from the eaves
-    for bz in (44, 45, 46, 53, 54, 55):
+    for bz in (30, 31, 32, 39, 40, 41):
         vx.set_block(grid, HX0 - 1, y + 1, bz, "plank")
         vx.set_block(grid, HX0 - 1, y + 2, bz,
                      ("flower_pink", "flower_red", "flower_yellow")[bz % 3])
-    for bx in (23, 24, 30, 31):
+    for bx in (19, 20, 26, 27):
         vx.set_block(grid, bx, y + 1, HZ1 + 1, "plank")
         vx.set_block(grid, bx, y + 2, HZ1 + 1,
                      ("flower_pink", "flower_yellow")[bx % 2])
-    spots = [(21, HZ0 - 1), (25, HZ0 - 1), (28, HZ0 - 1), (33, HZ0 - 1),
-             (22, HZ1 + 1), (26, HZ1 + 1), (31, HZ1 + 1), (HX0 - 1, 43),
-             (HX0 - 1, 47), (HX0 - 1, 52), (HX0 - 1, 56)]
+    spots = [(17, HZ0 - 1), (21, HZ0 - 1), (24, HZ0 - 1), (29, HZ0 - 1),
+             (18, HZ1 + 1), (22, HZ1 + 1), (27, HZ1 + 1), (HX0 - 1, 29),
+             (HX0 - 1, 33), (HX0 - 1, 38), (HX0 - 1, 42)]
     for i, (vx_, vz) in enumerate(spots):
         hang = 2 if i % 2 == 0 else 1
         for hh in range(hang):
@@ -291,47 +294,33 @@ def add_house(grid, heights):
 
 
 def add_terraces(grid, heights):
-    """Turn the house plateau's raw cliff edges into an intentional stone
-    retaining wall: blossom parapet, vines, lanterns, and a stepped stair
-    where the branch path climbs up to the front door."""
+    """Low stone skirt around the house pad where the surrounding ground is
+    lower (the plot is near-flat at the spawn so there are no cliff walls),
+    plus blossom parapet and lanterns on the front face toward the portal
+    row."""
     gy = HOUSE_Y
+    px0, pz0, px1, pz1 = HOUSE_PAD
 
-    def ground(x, z):
-        return ground_top(heights, x, z)
-
-    # north retaining wall (faces the menu camera)
-    for x in range(HOUSE_PAD[0], HOUSE_PAD[1] + 1):
-        g = ground(x, 37)
-        for yy in range(g + 1, gy + 1):
-            vx.set_block(grid, x, yy, 37, "stone")
-        # blossom parapet alternating with gaps
-        if x % 2 == 0:
-            vx.set_block(grid, x, gy + 1, 37,
-                         ("flower_pink", "flower_yellow", "flower_red")[(x // 2) % 3])
-    # west cheek wall
-    for z in range(HOUSE_PAD[2], HOUSE_PAD[3] + 1):
-        g = ground(14, z)
-        for yy in range(g + 1, gy + 1):
-            vx.set_block(grid, 14, yy, z, "stone")
-    # vines trailing down the north face
-    for x in range(18, 42, 5):
-        vx.set_block(grid, x, gy - 1, 36, "vine")
-        if x % 10 == 8:
-            vx.set_block(grid, x, gy - 2, 36, "vine")
-    # lantern posts framing the terrace
-    for lx in (17, 33):
-        vx.set_block(grid, lx, gy + 1, 35, "log")
-        vx.set_block(grid, lx, gy + 2, 35, "flame")
-        LANTERN_SPOTS.append((lx, gy + 2.5, 35))
-
-    # stone stair climbing the west edge where the branch path meets the pad
-    for sx in range(12, 16):
-        step_top = gy - (15 - sx)          # x15 -> 9 (pad), x12 -> 6 (ground)
-        for zz in (48, 49, 50):
-            g = ground(sx, zz)
-            for yy in range(g, step_top + 1):
-                vx.set_block(grid, sx, yy, zz, "path" if yy == step_top else "stone")
-            heights[zz - ORIGIN_Z][sx - ORIGIN_X] = max(step_top, g)
+    # front (south-edge) skirt where the terrain dips below pad level
+    for x in range(px0, px1 + 1):
+        g = ground_top(heights, x, pz0 - 1)
+        if g < gy:
+            for yy in range(g + 1, gy + 1):
+                vx.set_block(grid, x, yy, pz0 - 1, "stone")
+            if x % 2 == 0:
+                vx.set_block(grid, x, gy + 1, pz0 - 1,
+                             ("flower_pink", "flower_yellow", "flower_red")[(x // 2) % 3])
+    # west-edge skirt framing the path side
+    for z in range(pz0, pz1 + 1):
+        g = ground_top(heights, px0 - 1, z)
+        if g < gy:
+            for yy in range(g + 1, gy + 1):
+                vx.set_block(grid, px0 - 1, yy, z, "stone")
+    # lantern posts on the front corners + a pair framing the front door
+    for lx, lz in ((17, 25), (29, 25), (15, 33), (15, 38)):
+        vx.set_block(grid, lx, gy + 1, lz, "log")
+        vx.set_block(grid, lx, gy + 2, lz, "flame")
+        LANTERN_SPOTS.append((lx, gy + 2.5, lz))
 
 
 def add_pond(grid, heights):
@@ -355,7 +344,7 @@ def add_pond(grid, heights):
 def add_garden(grid):
     """Tilled crop rows + flowers east of the house."""
     gy = HOUSE_Y
-    x0, x1, z0, z1 = 36, 42, 45, 55
+    x0, x1, z0, z1 = 32, 38, 31, 41
     for x in range(x0, x1 + 1):
         for z in range(z0, z1 + 1):
             edge = x in (x0, x1) or z in (z0, z1)
@@ -378,12 +367,12 @@ def add_garden(grid):
 
 def add_path_branch(grid, heights):
     """Stepping-stone trail from the main road to the front door."""
-    z_line = 49
+    z_line = 35
     for x in range(2, HX0):
         top = max(ground_top(heights, x, z_line), PATH_Y if x < 4 else 0)
         if in_rect(x, z_line, HOUSE_PAD):
             top = HOUSE_Y
-        elif abs(x - 12) > 8:
+        elif abs(x - 9) > 8:
             top = ground_top(heights, x, z_line)
         vx.set_block(grid, x, top, z_line, "path" if x % 2 == 0 else "stone")
         if x % 7 == 3:

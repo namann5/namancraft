@@ -31,9 +31,22 @@ export function makeTextTexture({ lines = [], width = 512, height = 256, bg = '#
     ctx.fillRect(width - b, 0, b, height)
 
     const total = lines.length
+
+    // auto-fit the pixel font so long lines (portal subtitles etc.) are not
+    // clipped by the canvas edges
+    const baseSize = sizes[0]
+    ctx.font = `${baseSize}px "Press Start 2P", monospace`
+    const maxW = width - b * 2 - baseSize * 0.5
+    const longest = lines
+      .filter((l) => l)
+      .reduce((m, l) => Math.max(m, ctx.measureText(l).width), 0)
+    let size = baseSize
+    if (longest > maxW) {
+      size = Math.max(24, Math.floor((baseSize * maxW) / longest))
+    }
+
     lines.forEach((line, i) => {
       if (!line) return
-      const size = sizes[Math.min(i, sizes.length - 1)]
       ctx.font = `${size}px "Press Start 2P", monospace`
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'

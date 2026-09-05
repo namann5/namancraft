@@ -390,11 +390,11 @@ def look_at(cam, target):
 
 
 def set_camera_hero():
-    bpy.ops.object.camera_add(location=(0, -42, 13))
+    bpy.ops.object.camera_add(location=(0, -44, 13))
     cam = bpy.context.object
     cam.data.lens = 38
     cam.data.sensor_width = 36
-    look_at(cam, (2, 30, 8))
+    look_at(cam, (2, 21, 10))
     bpy.context.scene.camera = cam
     return cam
 
@@ -404,12 +404,12 @@ def set_camera_portal():
     cam = bpy.context.object
     cam.data.lens = 38
     cam.data.sensor_width = 36
-    look_at(cam, (0, 14, 9))
+    look_at(cam, (1, 17, 9))
     bpy.context.scene.camera = cam
     return cam
 
 
-def set_camera_loop(frames, target=(4, 22, 10), radius=58, height=13, base_angle=-20,
+def set_camera_loop(frames, target=(4, 20, 10), radius=46, height=13, base_angle=-20,
                     sway_deg=9, turns=1, height_amp=1.6):
     """Slow cinematic sway that returns to its start pose -> seamless loop.
     The camera pans a few degrees left/right around `target`, pushes in/out

@@ -43,7 +43,7 @@ export const ZONES = {
     title: 'The Home',
     tagline: "Naman's home base",
     accent: '#ffc97e',
-    pos: [16, -49],
+    pos: [14, -35],
     verb: 'Enter',
   },
   journey: {

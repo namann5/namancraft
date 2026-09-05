@@ -74,26 +74,26 @@ function preloadWorld(id) {
 // (social). Returning through any world's RETURN HOME portal puts
 // Naman back in front of the gateway he entered.
 // ------------------------------------------------------------------
-const HUB_PLAZA = { cx: -3.5, cz: -20, halfW: 16.25, depthHalf: 8 }
+const HUB_PLAZA = { cx: 2.25, cz: -16, halfW: 18.5, depthHalf: 7 }
 
 const HUB_PORTALS = [
-  { id: 'projects-world', x: -15.75, z: -20, rotY: 0, title: 'PROJECTS', subtitle: 'THE SKYLINE DISTRICT', icon: 'projects' },
-  { id: 'achievements-world', x: -6.75, z: -20, rotY: 0, title: 'ACHIEVEMENTS', subtitle: 'THE TROPHY ROTUNDA', icon: 'achievements' },
-  { id: 'info-world', x: 2.25, z: -20, rotY: 0, title: 'INFO', subtitle: 'THE MOONLIT ARCHIVE', icon: 'info' },
-  { id: 'social-world', x: 11.25, z: -20, rotY: 0, title: 'SOCIAL', subtitle: 'THE LANTERN COMMONS', icon: 'social' },
+  { id: 'projects-world', x: -15, z: -16, rotY: 0, title: 'PROJECTS', subtitle: 'THE SKYLINE DISTRICT', icon: 'projects' },
+  { id: 'achievements-world', x: -3.5, z: -16, rotY: 0, title: 'ACHIEVEMENTS', subtitle: 'THE TROPHY ROTUNDA', icon: 'achievements' },
+  { id: 'info-world', x: 8, z: -16, rotY: 0, title: 'INFO', subtitle: 'THE MOONLIT ARCHIVE', icon: 'info' },
+  { id: 'social-world', x: 19.5, z: -16, rotY: 0, title: 'SOCIAL', subtitle: 'THE LANTERN COMMONS', icon: 'social' },
 ]
 
 const JUNCTION_SIGNS = [
-  { x: -6.5, z: -14.5, line: 'PORTAL PLAZA ▲', color: '#c084fc' },
-  { x: 6.5, z: -14.5, line: 'THE FOUR GATEWAYS ▲', color: '#d9b3ff' },
+  { x: -18.5, z: -12, line: 'PORTAL PLAZA ▲', color: '#c084fc' },
+  { x: 23, z: -12, line: 'FOUR GATEWAYS ▲', color: '#d9b3ff' },
 ]
 
 // Warm lanterns flanking the plaza row (cheap emissive, shared glow).
 const PLAZA_LANTERNS = [
-  { x: -17.6, z: -13.6 },
-  { x: 12.6, z: -13.6 },
-  { x: -17.6, z: -26.4 },
-  { x: 12.6, z: -26.4 },
+  { x: -19.5, z: -9.5 },
+  { x: 24, z: -9.5 },
+  { x: -19.5, z: -22.5 },
+  { x: 24, z: -22.5 },
 ]
 
 function PlazaPad({ field }) {
@@ -115,7 +115,7 @@ function PlazaPad({ field }) {
         <meshLambertMaterial color="#6f727a" />
       </mesh>
       {PLAZA_LANTERNS.map((l, i) => (
-        <group key={i} position={[l.x, field.groundAt(l.x, l.z), l.z]}>
+        <group key={i} position={[l.x, gy, l.z]}>
           <mesh position={[0, 0.35, 0]} castShadow>
             <boxGeometry args={[0.5, 0.7, 0.5]} />
             <meshLambertMaterial color="#3a3327" />
@@ -133,6 +133,8 @@ function PlazaPad({ field }) {
 function PortalHub() {
   const field = getField('overworld')
   if (!field) return null
+  // all four gateways share the plaza platform's floor height
+  const gy = field.groundAt(HUB_PLAZA.cx, HUB_PLAZA.cz)
   return (
     <>
       <PlazaPad field={field} />
@@ -140,7 +142,7 @@ function PortalHub() {
         <Portal
           key={h.id}
           id={h.id}
-          position={[h.x, field.groundAt(h.x, h.z), h.z]}
+          position={[h.x, gy, h.z]}
           rotationY={h.rotY}
           title={h.title}
           subtitle={h.subtitle}
@@ -150,7 +152,7 @@ function PortalHub() {
       {JUNCTION_SIGNS.map((s) => (
         <VoxelSign
           key={s.line}
-          position={[s.x, field.groundAt(s.x, s.z), s.z]}
+          position={[s.x, gy, s.z]}
           lines={[s.line]}
           colors={[s.color]}
           width={4.4}

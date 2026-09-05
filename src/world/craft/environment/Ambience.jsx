@@ -63,10 +63,10 @@ function ChimneySmoke() {
 }
 
 const LEAF_COUNT = 72
-// two drift fields: around the house + along the menu-view corridor
+// two drift fields: around the house + along the plaza approach
 const LEAF_FIELDS = [
-  { cx: 27, cz: -48, r: 15, top: 21, ground: 9 },
-  { cx: -2, cz: -26, r: 20, top: 19, ground: 8 },
+  { cx: 24, cz: -35, r: 14, top: 16, ground: 7 },
+  { cx: 2, cz: -16, r: 24, top: 17, ground: 7 },
 ]
 
 // Falling blossom petals drifting through the scene.
@@ -141,9 +141,9 @@ function Fireflies() {
         positions[i * 3 + 1] = 7.5 + Math.random() * 4
         positions[i * 3 + 2] = -14 + Math.random() * 10
       } else {
-        positions[i * 3] = 12 + Math.random() * 34
-        positions[i * 3 + 1] = 9.5 + Math.random() * 5
-        positions[i * 3 + 2] = -60 + Math.random() * 22
+        positions[i * 3] = 13 + Math.random() * 24
+        positions[i * 3 + 1] = 8 + Math.random() * 5
+        positions[i * 3 + 2] = -46 + Math.random() * 22
       }
     }
     const g = new THREE.BufferGeometry()
