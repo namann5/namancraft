@@ -12,7 +12,7 @@ import { makeHeightField } from '../terrain'
 // ------------------------------------------------------------------
 
 export const useWorldStore = create((set) => ({
-  // 'overworld' | 'nether' | 'end' | 'skills' | 'projects'
+  // 'overworld' | 'projects-world' | 'achievements-world' | 'info-world' | 'social-world'
   world: 'overworld',
   // null | { to, color, title, phase: 'out' | 'hold' | 'in' }
   travel: null,

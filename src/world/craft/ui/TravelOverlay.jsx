@@ -5,17 +5,12 @@
 // phase 'hold': covered; world swap happens behind this
 // phase 'in'  : overlay dissolves revealing the new dimension
 //
-// When traveling to a dimension (nether/end/skills/projects) a
-// rendered cinematic still for that dimension fades in behind the
-// disc so the cover doubles as a stylized destination preview.
+// The rendered cinematic stills shipped with the original dimensions
+// are retired along with their worlds; each destination now presents
+// the disc + title treatment only.
 // ------------------------------------------------------------------
 
-const DIM_STILLS = {
-  nether: `${import.meta.env.BASE_URL}dims/nether.png`,
-  end: `${import.meta.env.BASE_URL}dims/end.png`,
-  skills: `${import.meta.env.BASE_URL}dims/skills.png`,
-  projects: `${import.meta.env.BASE_URL}dims/projects.png`,
-}
+const DIM_STILLS = {}
 
 export default function TravelOverlay({ travel }) {
   if (!travel) return null

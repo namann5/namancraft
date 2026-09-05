@@ -6,6 +6,7 @@ import { useWorldStore } from './worldStore'
 import { playerEye } from '../controls'
 import { portalBus } from './portalBus'
 import VoxelSign from './signs'
+import VoxelIcon from './icons'
 
 // ------------------------------------------------------------------
 // Portal — the dimension-travel structure.
@@ -225,6 +226,7 @@ export default function Portal({
   sign = true,
   signLines,
   signWidth,
+  icon,
 }) {
   const lowEnd = useLowEnd()
   const matRef = useRef(null)
@@ -391,6 +393,13 @@ export default function Portal({
           bg="#150d20"
           width={signWidth || Math.max(3.2, (signLines ? signLines[0] : title).length * 0.44)}
           height={1.4}
+        />
+      )}
+
+      {icon && (
+        <VoxelIcon
+          blocks={icon}
+          position={[-(halfW + 1.1), 0.24, 1.18]}
         />
       )}
     </group>

@@ -144,6 +144,69 @@ export function cityPalette() {
   return cityBlocks
 }
 
+// Purple night rotunda for the Achievements Hall.
+let rotundaBlocks = null
+export function rotundaPalette() {
+  if (!rotundaBlocks) {
+    rotundaBlocks = defineBlocks([
+      { name: 'arena', color: '#4a3a5e', tex: 'floorTile' },
+      { name: 'arenaDark', color: '#3a2c4c', tex: 'floorTile' },
+      { name: 'stoneSeat', color: '#3a3a44', tex: 'blackstone' },
+      { name: 'obsidian', color: '#17101f', tex: 'obsidian' },
+      { name: 'purpur', color: '#9d6bad', tex: 'endPurple' },
+      { name: 'purpurDark', color: '#6d4380', tex: 'obsidian' },
+      { name: 'pillar', color: '#574a6e', tex: 'endPurple' },
+      { name: 'gold', color: '#ffcf4d', glow: true },
+      { name: 'goldPlate', color: '#c99a2e', tex: 'stoneBrick' },
+      { name: 'endGlow', color: '#c9a0ff', glow: true },
+    ])
+  }
+  return rotundaBlocks
+}
+
+// Moonlit library palette for the Info Archive.
+let archiveBlocks = null
+export function archivePalette() {
+  if (!archiveBlocks) {
+    archiveBlocks = defineBlocks([
+      { name: 'floor', color: '#c9c39a', tex: 'stoneBrick' },
+      { name: 'floorDark', color: '#b5ad78', tex: 'endPurple' },
+      { name: 'stone', color: '#4a3a5e', tex: 'endPurple' },
+      { name: 'stoneDark', color: '#3a2c4c', tex: 'obsidian' },
+      { name: 'shelf', color: '#5a4632', tex: 'planks' },
+      { name: 'shelfDark', color: '#463526', tex: 'logSide' },
+      { name: 'bookHot', color: '#c78aff', glow: true },
+      { name: 'bookCool', color: '#5ec8f0', glow: true },
+      { name: 'bookGold', color: '#ffcf4d', glow: true },
+      { name: 'lanternGold', color: '#ffe9b0', glow: true },
+      { name: 'obsidian', color: '#17101f', tex: 'obsidian' },
+      { name: 'endGlow', color: '#c9a0ff', glow: true },
+    ])
+  }
+  return archiveBlocks
+}
+
+// Warm night-village palette for the Social Court.
+let commonsBlocks = null
+export function commonsPalette() {
+  if (!commonsBlocks) {
+    commonsBlocks = defineBlocks([
+      { name: 'nightGrass', color: '#2f4a36', tex: 'grassTop' },
+      { name: 'nightGrassDark', color: '#243a2b', tex: 'grassTop' },
+      { name: 'dirt', color: '#3a2c20', tex: 'dirt' },
+      { name: 'path', color: '#8a8578', tex: 'concrete' },
+      { name: 'pathEdge', color: '#6a665c', tex: 'concrete' },
+      { name: 'plank', color: '#7a5a33', tex: 'planks' },
+      { name: 'log', color: '#5a4328', tex: 'logSide' },
+      { name: 'roof', color: '#4a3a2c', tex: 'planks' },
+      { name: 'lantern', color: '#ffe9b0', glow: true },
+      { name: 'flame', color: '#ffb03a', glow: true },
+      { name: 'embers', color: '#ff7b1f', glow: true },
+    ])
+  }
+  return commonsBlocks
+}
+
 // ---- TerrainGrid -------------------------------------------------------
 
 const VOID = -999
